@@ -1,5 +1,5 @@
 # Game Title
-## Author: Anna Szymanek
+## Author: Szymon Malec
 
 ### Short description
 
