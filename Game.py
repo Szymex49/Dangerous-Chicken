@@ -1,11 +1,13 @@
 import pygame as pg
+from pygame.locals import *
 import sys
+import math
 
 
 # Main options
 pg.init()
-screen_width = 1200
-screen_height = 800
+screen_width = 750
+screen_height = 750
 clock = pg.time.Clock()
 menu_font = pg.font.SysFont('Calibri', 80, bold=False, italic=False)
 
@@ -51,6 +53,30 @@ class Hero(pg.sprite.Sprite):
             self.rect.bottom = screen_height
 
 
+class Enemy(pg.sprite.Sprite):
+    """"""
+
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.transform.scale(load_image('enemy.jpg'), (100, 100))
+        self.rect = self.image.get_rect()
+        self.rect.center = (50, 50)
+        self.x_velocity = 0
+        self.y_velocity = 0
+    
+    def update(self, hero_coords:tuple):
+        """Update the position of the enemy"""
+        x_dist = hero_coords[0] - self.rect.center[0]
+        y_dist = hero_coords[1] - self.rect.center[1]
+        dist = math.sqrt(x_dist**2 + y_dist**2)
+        try:
+            self.x_velocity = (4 * x_dist) / dist
+            self.y_velocity = (4 * y_dist) / dist 
+        except ZeroDivisionError:
+            pass
+        self.rect.move_ip((self.x_velocity, self.y_velocity))
+
+
 def menu():
     """Display the main menu of the game."""
 
@@ -63,10 +89,10 @@ def menu():
 
         click = False
         for event in pg.event.get():
-            if event.type == pg.QUIT:
+            if event.type == QUIT:
                 pg.quit()
                 sys.exit()
-            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 click = True
 
         if play_button.collidepoint(mx, my) and click:
@@ -91,12 +117,12 @@ def options():
 
         click = False
         for event in pg.event.get():
-            if event.type == pg.QUIT:
+            if event.type == QUIT:
                 pg.quit()
                 sys.exit()
-            if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+            if event.type == KEYDOWN and event.key == K_ESCAPE:
                 running = False
-            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 click = True
 
         if button1.collidepoint(mx, my) and click:
@@ -116,9 +142,14 @@ def game():
     screen.blit(background, (0, 0))
 
     # Character
-    hero_sprite = pg.sprite.RenderClear()
+    hero_sprite = pg.sprite.Group()
     hero = Hero()
     hero_sprite.add(hero)
+
+    # Enemy
+    enemy_sprite = pg.sprite.Group()
+    enemy = Enemy()
+    enemy_sprite.add(enemy)
 
     running = True
 
@@ -126,36 +157,41 @@ def game():
         clock.tick(60)
 
         for event in pg.event.get():
-            if event.type == pg.QUIT:
+            if event.type == QUIT:
                 pg.quit()
                 sys.exit()
 
-            elif event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE:
+            elif event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
                     running = False
                 # WSAD - moving the character
-                if event.key == pg.K_a:
+                if event.key == K_a:
                     hero.x_velocity = -4
-                if event.key == pg.K_d:
+                if event.key == K_d:
                     hero.x_velocity = 4
-                if event.key == pg.K_w:
+                if event.key == K_w:
                     hero.y_velocity = -4
-                if event.key == pg.K_s:
+                if event.key == K_s:
                     hero.y_velocity = 4
 
-            elif event.type == pg.KEYUP:
-                if event.key == pg.K_a:
+            elif event.type == KEYUP:
+                if event.key == K_a:
                     hero.x_velocity = 0
-                if event.key == pg.K_d:
+                if event.key == K_d:
                     hero.x_velocity = 0
-                if event.key == pg.K_w:
+                if event.key == K_w:
                     hero.y_velocity = 0
-                if event.key == pg.K_s:
+                if event.key == K_s:
                     hero.y_velocity = 0
 
         hero.update()
         hero_sprite.clear(screen, background)
         hero_sprite.draw(screen)
+
+        enemy.update((1 * hero.rect.center[0], 1 * hero.rect.center[1]))
+        enemy_sprite.clear(screen, background)
+        enemy_sprite.draw(screen)
+
         pg.display.update()
 
 
