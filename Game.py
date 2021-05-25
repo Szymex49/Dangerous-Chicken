@@ -3,17 +3,28 @@ import sys
 
 
 # Main options
+pg.init()
 screen_width = 1200
 screen_height = 800
 clock = pg.time.Clock()
+menu_font = pg.font.SysFont('Calibri', 80, bold=False, italic=False)
 
 
-def load_image(filename): 
+def load_image(filename:str): 
     return pg.image.load('files\\' + filename).convert()
 
 
-def load_sound(filename):
+def load_sound(filename:str):
     return pg.mixer.Sound('files\\' + filename)
+
+
+def draw_text(text:str, position:tuple, font:object, rgb_color:tuple):
+    """Draw the text on the screen and return the rectangle in the position of the text."""
+    text_obj = font.render(text, 1, rgb_color)
+    text_rect = text_obj.get_rect()
+    text_rect.center = position
+    screen.blit(text_obj, text_rect)
+    return text_rect
 
 
 class Hero(pg.sprite.Sprite):
@@ -47,11 +58,8 @@ def menu():
         screen.fill((0, 0, 0))
         mx, my = pg.mouse.get_pos()  # Mouse position
 
-        play_button = pg.Rect(50, 100, 200, 50)
-        options_button = pg.Rect(50, 200, 200, 50)
-
-        pg.draw.rect(screen, (255, 255, 255), play_button)
-        pg.draw.rect(screen, (255, 0, 0), options_button)
+        play_button = draw_text('Play', (screen_width/2, 50), menu_font, (0, 200, 0))
+        options_button = draw_text('Options', (screen_width/2, 150), menu_font, (200, 0, 0))
 
         click = False
         for event in pg.event.get():
@@ -78,11 +86,8 @@ def options():
         screen.fill((0, 100, 200))
         mx, my = pg.mouse.get_pos()  # Mouse position
 
-        button1 = pg.Rect(50, 200, 300, 70)
-        button2 = pg.Rect(50, 400, 300, 70)
-
-        pg.draw.rect(screen, (255, 255, 255), button1)
-        pg.draw.rect(screen, (255, 0, 0), button2)
+        button1 = draw_text('Option 1', (screen_width/2, 50), menu_font, (255, 255, 255))
+        button2 = draw_text('Option 2', (screen_width/2, 150), menu_font, (255, 255, 255))
 
         click = False
         for event in pg.event.get():
@@ -154,7 +159,6 @@ def game():
         pg.display.update()
 
 
-pg.init()
 screen = pg.display.set_mode((screen_width, screen_height))
 pg.display.set_caption("fajna gra")
 menu()
