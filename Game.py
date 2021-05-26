@@ -12,8 +12,13 @@ clock = pg.time.Clock()
 menu_font = pg.font.SysFont('Calibri', 80, bold=False, italic=False)
 
 
-def load_image(filename:str): 
-    return pg.image.load('files\\' + filename).convert()
+def load_image(filename:str, erase_bg=True):
+    image = pg.image.load('files\\' + filename).convert()
+
+    if erase_bg is True:   # Make the background of the image transparrent
+        colorkey = image.get_at((0,0))
+        image.set_colorkey(colorkey, RLEACCEL)
+    return image
 
 
 def load_sound(filename:str):
@@ -54,15 +59,16 @@ class Hero(pg.sprite.Sprite):
 
 
 class Enemy(pg.sprite.Sprite):
-    """"""
+    """An enemy who moves towards the player."""
 
-    def __init__(self):
+    def __init__(self, starting_position:tuple, velocity:int):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.transform.scale(load_image('enemy.jpg'), (100, 100))
         self.rect = self.image.get_rect()
-        self.rect.center = (50, 50)
+        self.rect.center = starting_position
         self.x_velocity = 0
         self.y_velocity = 0
+        self.velocity = velocity
     
     def update(self, hero_coords:tuple):
         """Update the position of the enemy"""
@@ -70,10 +76,40 @@ class Enemy(pg.sprite.Sprite):
         y_dist = hero_coords[1] - self.rect.center[1]
         dist = math.sqrt(x_dist**2 + y_dist**2)
         try:
-            self.x_velocity = (4 * x_dist) / dist
-            self.y_velocity = (4 * y_dist) / dist 
+            self.x_velocity = (self.velocity * x_dist) / dist
+            self.y_velocity = (self.velocity * y_dist) / dist 
         except ZeroDivisionError:
             pass
+        self.rect.move_ip((self.x_velocity, self.y_velocity))
+
+
+class Missile(pg.sprite.Sprite):
+    """A missile which moves towards the aim."""
+
+    def __init__(self, start_position:tuple, aim:tuple, velocity:int):
+        pg.sprite.Sprite.__init__(self)
+        self.velocity = velocity
+        self.aim = aim
+
+        x_dist = self.aim[0] - start_position[0]
+        y_dist = self.aim[1] - start_position[1]
+        dist = math.sqrt(x_dist**2 + y_dist**2)
+        self.x_velocity = (self.velocity * x_dist) / dist
+        self.y_velocity = (self.velocity * y_dist) / dist
+
+        # Find an angle of rotation
+        if y_dist <= 0:
+            angle = 180 * math.acos((x_dist / dist)) / math.pi
+        else:
+            angle = 180 * math.acos(-x_dist / dist) / math.pi + 180
+
+        self.image = pg.transform.rotate(pg.transform.scale(load_image('rocket.png'), (80, 40)), angle)
+        self.rect = self.image.get_rect()
+        self.rect.center = start_position
+
+
+    def update(self):
+        """Update the position of the laser"""
         self.rect.move_ip((self.x_velocity, self.y_velocity))
 
 
@@ -138,7 +174,7 @@ def game():
     """Start the game."""
 
     # Background
-    background = load_image('background.jpg')
+    background = load_image('background.jpg', False)
     screen.blit(background, (0, 0))
 
     # Character
@@ -148,8 +184,11 @@ def game():
 
     # Enemy
     enemy_sprite = pg.sprite.Group()
-    enemy = Enemy()
+    enemy = Enemy((50, 50), 2)
     enemy_sprite.add(enemy)
+
+    # Lasers
+    missile_sprite = pg.sprite.Group()
 
     running = True
 
@@ -183,14 +222,27 @@ def game():
                     hero.y_velocity = 0
                 if event.key == K_s:
                     hero.y_velocity = 0
+            
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                aim = pg.mouse.get_pos()
+                missile = Missile(hero.rect.center, aim, 8)
+                missile_sprite.add(missile)
 
+        # Update all the objects
         hero.update()
-        hero_sprite.clear(screen, background)
-        hero_sprite.draw(screen)
-
         enemy.update((1 * hero.rect.center[0], 1 * hero.rect.center[1]))
+        for missile_obj in missile_sprite:
+            missile_obj.update()
+
+        # Clear the screen
+        hero_sprite.clear(screen, background)
         enemy_sprite.clear(screen, background)
+        missile_sprite.clear(screen, background)
+
+        # Draw the objects
+        hero_sprite.draw(screen)
         enemy_sprite.draw(screen)
+        missile_sprite.draw(screen)
 
         pg.display.update()
 
