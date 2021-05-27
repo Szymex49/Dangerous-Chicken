@@ -1,6 +1,7 @@
 import pygame as pg
 from pygame.locals import *
 import sys
+import os
 import math
 
 
@@ -61,7 +62,7 @@ class Hero(pg.sprite.Sprite):
 class Enemy(pg.sprite.Sprite):
     """An enemy who moves towards the player."""
 
-    def __init__(self, starting_position:tuple, velocity:int):
+    def __init__(self, starting_position:tuple, velocity:int, lifes:int):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.transform.scale(load_image('enemy.jpg'), (100, 100))
         self.rect = self.image.get_rect()
@@ -69,6 +70,7 @@ class Enemy(pg.sprite.Sprite):
         self.x_velocity = 0
         self.y_velocity = 0
         self.velocity = velocity
+        self.lifes = lifes
     
     def update(self, hero_coords:tuple):
         """Update the position of the enemy"""
@@ -106,11 +108,30 @@ class Missile(pg.sprite.Sprite):
         self.image = pg.transform.rotate(pg.transform.scale(load_image('rocket.png'), (80, 40)), angle)
         self.rect = self.image.get_rect()
         self.rect.center = start_position
-
-
+        
     def update(self):
-        """Update the position of the laser"""
+        """Update the position of the missile"""
         self.rect.move_ip((self.x_velocity, self.y_velocity))
+
+
+class Explosion(pg.sprite.Sprite):
+    """An animation of explosion displayed when an enemy is destroyed."""
+
+    def __init__(self, position:tuple):
+        pg.sprite.Sprite.__init__(self)
+        self.position = position
+        self.images = [pg.transform.scale(load_image('explosion\\' + image), (150, 150)) for image in os.listdir('files\explosion')]
+        self.image_number = 0
+        self.image = self.images[0]
+        self.rect = self.image.get_rect()
+        self.rect.center = position
+    
+    def update(self):
+        """Display next frame."""
+        self.image_number += 1
+        self.image = self.images[self.image_number]
+        if self.image_number + 1 >= len(self.images):
+            self.kill()
 
 
 def menu():
@@ -184,11 +205,14 @@ def game():
 
     # Enemy
     enemy_sprite = pg.sprite.Group()
-    enemy = Enemy((50, 50), 2)
-    enemy_sprite.add(enemy)
+    enemy_sprite.add(Enemy((50, 50), 3, 3))
+    add_enemy_counter = 0
 
     # Lasers
     missile_sprite = pg.sprite.Group()
+
+    # Explosions
+    explosion_sprite = pg.sprite.Group()
 
     running = True
 
@@ -225,23 +249,45 @@ def game():
             
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 aim = pg.mouse.get_pos()
-                missile = Missile(hero.rect.center, aim, 8)
-                missile_sprite.add(missile)
+                missile_sprite.add(Missile(hero.rect.center, aim, 8))
+
+        # Add enemies
+        add_enemy_counter += 1
+        if add_enemy_counter == 150:
+            enemy_sprite.add(Enemy((50, 50), 3, 3))
+            add_enemy_counter = 0
 
         # Update all the objects
         hero.update()
-        enemy.update((1 * hero.rect.center[0], 1 * hero.rect.center[1]))
+
+        for enemy in enemy_sprite:
+            enemy.update((hero.rect.center[0], hero.rect.center[1]))
+            for missile_obj in missile_sprite:
+                if enemy.rect.collidepoint(missile_obj.rect.center):  # If the missile hit the enemy
+                    enemy.lifes -= 1
+                    if enemy.lifes <= 0:   # If the enemy dies
+                        explosion_sprite.add(Explosion(enemy.rect.center))  # Draw the explosion
+                        enemy.kill()
+                    missile_obj.kill()
+        
         for missile_obj in missile_sprite:
             missile_obj.update()
+            if 0 <= missile_obj.rect.center[0] >= screen_width or 0 >= missile_obj.rect.center[1] >= screen_height:
+                missile_obj.kill()
+        
+        for explosion in explosion_sprite:
+            explosion.update()
 
         # Clear the screen
         hero_sprite.clear(screen, background)
         enemy_sprite.clear(screen, background)
+        explosion_sprite.clear(screen, background)
         missile_sprite.clear(screen, background)
 
         # Draw the objects
         hero_sprite.draw(screen)
         enemy_sprite.draw(screen)
+        explosion_sprite.draw(screen)
         missile_sprite.draw(screen)
 
         pg.display.update()
