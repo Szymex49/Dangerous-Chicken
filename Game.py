@@ -12,6 +12,10 @@ screen_height = 750
 clock = pg.time.Clock()
 menu_font = pg.font.SysFont('Calibri', 80, bold=False, italic=False)
 
+running_options = True
+running_pause = True
+running_game = True
+
 
 def load_image(filename:str, erase_bg=True):
     image = pg.image.load('files\\' + filename).convert()
@@ -45,6 +49,7 @@ class Hero(pg.sprite.Sprite):
         self.rect.center = (screen_width/2, screen_height/2)
         self.x_velocity = 0
         self.y_velocity = 0
+        self.life = 3
 
     def update(self):
         """Update the position of the hero."""
@@ -141,8 +146,13 @@ def menu():
         screen.fill((0, 0, 0))
         mx, my = pg.mouse.get_pos()  # Mouse position
 
-        play_button = draw_text('Play', (screen_width/2, 50), menu_font, (0, 200, 0))
-        options_button = draw_text('Options', (screen_width/2, 150), menu_font, (200, 0, 0))
+        # Draw buttons
+        play_button = draw_text('Play', (screen_width/2, 100), menu_font, (0, 200, 0))
+        rules_button = draw_text('Rules', (screen_width/2, 200), menu_font, (255, 255, 255))
+        options_button = draw_text('Options', (screen_width/2, 300), menu_font, (255, 255, 255))
+        ranking_button = draw_text('Ranking', (screen_width/2, 400), menu_font, (255, 255, 255))
+        author_button = draw_text('Author', (screen_width/2, 500), menu_font, (255, 255, 255))
+        quit_button = draw_text('Quit', (screen_width/2, 600), menu_font, (200, 0, 0))
 
         click = False
         for event in pg.event.get():
@@ -154,8 +164,17 @@ def menu():
 
         if play_button.collidepoint(mx, my) and click:
             game()
+        if rules_button.collidepoint(mx, my) and click:
+            pass
         if options_button.collidepoint(mx, my) and click:
             options()
+        if ranking_button.collidepoint(mx, my) and click:
+            pass
+        if author_button.collidepoint(mx, my) and click:
+            pass
+        if quit_button.collidepoint(mx, my) and click:
+            pg.quit()
+            sys.exit()
 
         pg.display.update()
         clock.tick(60)
@@ -164,8 +183,10 @@ def menu():
 def options():
     """Display the game options and allow the user to customize them."""
 
-    running = True
-    while running:
+    global running_options
+    running_options = True
+
+    while running_options:
         screen.fill((0, 100, 200))
         mx, my = pg.mouse.get_pos()  # Mouse position
 
@@ -178,7 +199,7 @@ def options():
                 pg.quit()
                 sys.exit()
             if event.type == KEYDOWN and event.key == K_ESCAPE:
-                running = False
+                running_options = False
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 click = True
 
@@ -191,8 +212,47 @@ def options():
         clock.tick(60)
 
 
+def pause():
+    """Pause the game and display a pause screen."""
+
+    global running_game
+    global running_pause
+    running_pause = True
+
+    while running_pause:
+        screen.fill((0, 0, 0))
+        mx, my = pg.mouse.get_pos()  # Mouse position
+
+        resume_button = draw_text('Resume', (screen_width/2, 50), menu_font, (0, 200, 0))
+        menu_button = draw_text('Return to menu', (screen_width/2, 150), menu_font, (200, 0, 0))
+
+        click = False
+        for event in pg.event.get():
+            if event.type == QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                click = True
+
+        if resume_button.collidepoint(mx, my) and click:
+            running_pause = False
+        if menu_button.collidepoint(mx, my) and click:
+            running_pause = False
+            running_game = False
+
+        pg.display.update()
+        clock.tick(60)
+    
+    # Restore the background
+    background = load_image('background.jpg', False)
+    screen.blit(background, (0, 0))
+
+
 def game():
     """Start the game."""
+
+    global running_game
+    running_game = True
 
     # Background
     background = load_image('background.jpg', False)
@@ -214,9 +274,7 @@ def game():
     # Explosions
     explosion_sprite = pg.sprite.Group()
 
-    running = True
-
-    while running:
+    while running_game:
         clock.tick(60)
 
         for event in pg.event.get():
@@ -226,7 +284,8 @@ def game():
 
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    running = False
+                    pause()
+
                 # WSAD - moving the character
                 if event.key == K_a:
                     hero.x_velocity = -4
@@ -262,6 +321,15 @@ def game():
 
         for enemy in enemy_sprite:
             enemy.update((hero.rect.center[0], hero.rect.center[1]))
+
+            # If the enemy caught up with the hero
+            if hero.rect.collidepoint(enemy.rect.center):
+                explosion_sprite.add(Explosion(enemy.rect.center))  # Draw the explosion of the enemy
+                enemy.kill()
+                hero.life -= 1
+                if hero.life <= 0:  # If the hero's life has ended
+                    running_game = False
+            
             for missile_obj in missile_sprite:
                 if enemy.rect.collidepoint(missile_obj.rect.center):  # If the missile hit the enemy
                     enemy.lifes -= 1
