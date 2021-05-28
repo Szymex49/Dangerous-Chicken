@@ -15,6 +15,7 @@ menu_font = pg.font.SysFont('Calibri', 80, bold=False, italic=False)
 running_options = True
 running_pause = True
 running_game = True
+running_game_over = True
 
 
 def load_image(filename:str, erase_bg=True):
@@ -163,7 +164,7 @@ def menu():
                 click = True
 
         if play_button.collidepoint(mx, my) and click:
-            game()
+            game_over()
         if rules_button.collidepoint(mx, my) and click:
             pass
         if options_button.collidepoint(mx, my) and click:
@@ -223,8 +224,8 @@ def pause():
         screen.fill((0, 0, 0))
         mx, my = pg.mouse.get_pos()  # Mouse position
 
-        resume_button = draw_text('Resume', (screen_width/2, 50), menu_font, (0, 200, 0))
-        menu_button = draw_text('Return to menu', (screen_width/2, 150), menu_font, (200, 0, 0))
+        resume_button = draw_text('Resume', (screen_width/2, 100), menu_font, (0, 200, 0))
+        menu_button = draw_text('Return to menu', (screen_width/2, 200), menu_font, (200, 0, 0))
 
         click = False
         for event in pg.event.get():
@@ -246,6 +247,37 @@ def pause():
     # Restore the background
     background = load_image('background.jpg', False)
     screen.blit(background, (0, 0))
+
+
+def game_over():
+    """Display a 'game over' screen."""
+    
+    global running_game_over
+    running_game_over = True
+    game()  # Start game
+
+    while running_game_over:
+        screen.fill((0, 0, 0))
+        mx, my = pg.mouse.get_pos()  # Mouse position
+
+        restart_button = draw_text('Restart', (screen_width/2, 100), menu_font, (0, 200, 0))
+        menu_button = draw_text('Return to menu', (screen_width/2, 200), menu_font, (200, 0, 0))
+
+        click = False
+        for event in pg.event.get():
+            if event.type == QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                click = True
+
+        if restart_button.collidepoint(mx, my) and click:
+            game()
+        if menu_button.collidepoint(mx, my) and click:
+            running_game_over = False
+
+        pg.display.update()
+        clock.tick(60)
 
 
 def game():
