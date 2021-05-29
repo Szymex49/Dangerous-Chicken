@@ -283,6 +283,16 @@ def game():
         explosion_sprite.draw(screen)
         missile_sprite.draw(screen)
 
+        # Draw lifes
+        if hero.life == 0:
+            draw_lifes(0)
+        if hero.life == 1:
+            draw_lifes(1)
+        if hero.life == 2:
+            draw_lifes(2)
+        if hero.life == 3:
+            draw_lifes(3)
+
         # If the game has just started, display transition
         if transition:
             darken = pg.Surface((screen_width, screen_height))

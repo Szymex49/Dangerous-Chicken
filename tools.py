@@ -29,3 +29,33 @@ def draw_text(text:str, position:tuple, font:object, rgb_color:tuple):
     text_rect.center = position
     screen.blit(text_obj, text_rect)
     return text_rect
+
+
+def draw_lifes(lifes):
+    """Draw lifes of the player on the screen."""
+    full_heart = pg.transform.scale(load_image('heart.png'), (80, 80))
+    empty_heart = pg.transform.scale(load_image('heart.png'), (80, 80))
+    empty_heart.set_alpha(90)
+    heart_rect1 = full_heart.get_rect()
+    heart_rect2 = full_heart.get_rect()
+    heart_rect3 = full_heart.get_rect()
+    heart_rect1.topleft = (510, 0)
+    heart_rect2.topleft = (590, 0)
+    heart_rect3.topleft = (670, 0)
+
+    if lifes == 0:
+        screen.blit(empty_heart, heart_rect1)
+        screen.blit(empty_heart, heart_rect2)
+        screen.blit(empty_heart, heart_rect3)
+    if lifes == 1:
+        screen.blit(full_heart, heart_rect1)
+        screen.blit(empty_heart, heart_rect2)
+        screen.blit(empty_heart, heart_rect3)
+    if lifes == 2:
+        screen.blit(full_heart, heart_rect1)
+        screen.blit(full_heart, heart_rect2)
+        screen.blit(empty_heart, heart_rect3)
+    if lifes == 3:
+        screen.blit(full_heart, heart_rect1)
+        screen.blit(full_heart, heart_rect2)
+        screen.blit(full_heart, heart_rect3)
