@@ -41,7 +41,7 @@ class Hero(pg.sprite.Sprite):
 class Enemy(pg.sprite.Sprite):
     """An enemy who moves towards the player."""
 
-    def __init__(self, starting_position:tuple, velocity:int, lifes:int):
+    def __init__(self, starting_position:tuple, velocity:int, life:int, points:int):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.transform.scale(load_image('enemy.jpg'), (100, 100))
         self.rect = self.image.get_rect()
@@ -49,7 +49,8 @@ class Enemy(pg.sprite.Sprite):
         self.x_velocity = 0
         self.y_velocity = 0
         self.velocity = velocity
-        self.lifes = lifes
+        self.life = life
+        self.points = points
     
     def update(self, hero_coords:tuple):
         """Update the position of the enemy"""
@@ -111,3 +112,24 @@ class Explosion(pg.sprite.Sprite):
         self.image = self.images[self.image_number]
         if self.image_number + 1 >= len(self.images):
             self.kill()
+
+
+class ScoreBoard(pg.sprite.Sprite):
+    """A scoreboard which displays the number of player's points."""
+
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.score = 0
+        self.text = "Score: " + str(self.score)
+        self.font = pg.font.SysFont('Calibri', 40)
+        self.image = self.font.render(self.text, 1, (0, 0, 0))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (50, 10)
+
+    def update(self, new_points):
+        """"""
+        self.score += new_points
+        self.text = "Score: " + str(self.score)
+        self.image = self.font.render(self.text, 1, (0, 0, 0))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (20, 10)

@@ -8,7 +8,7 @@ import sys
 # Main options
 pg.init()
 clock = pg.time.Clock()
-menu_font = pg.font.SysFont('Calibri', 80, bold=False, italic=False)
+menu_font = pg.font.SysFont('Calibri', 80)
 
 running_options = True
 running_pause = True
@@ -258,7 +258,7 @@ def game():
 
     # Enemy
     enemy_sprite = pg.sprite.Group()
-    enemy_sprite.add(Enemy((50, 50), 3, 3))
+    enemy_sprite.add(Enemy((50, 50), 3, 3, 1))
     add_enemy_counter = 0
 
     # Lasers
@@ -267,21 +267,29 @@ def game():
     # Explosions
     explosion_sprite = pg.sprite.Group()
 
+    # Scoreboard
+    scoreboard_sprite = pg.sprite.Group()
+    scoreboard = ScoreBoard()
+    scoreboard_sprite.add(scoreboard)
+
     while running_game:
         clock.tick(60)
         screen.blit(background, (0, 0))
+        points = 0
 
         # Clear the screen
         hero_sprite.clear(screen, background)
         enemy_sprite.clear(screen, background)
         explosion_sprite.clear(screen, background)
         missile_sprite.clear(screen, background)
+        scoreboard_sprite.clear(screen, background)
 
         # Draw the objects
         hero_sprite.draw(screen)
         enemy_sprite.draw(screen)
         explosion_sprite.draw(screen)
         missile_sprite.draw(screen)
+        scoreboard_sprite.draw(screen)
 
         # Draw lifes
         if hero.life == 0:
@@ -339,7 +347,7 @@ def game():
         # Add enemies
         add_enemy_counter += 1
         if add_enemy_counter == 150:
-            enemy_sprite.add(Enemy((50, 50), 3, 3))
+            enemy_sprite.add(Enemy((50, 50), 3, 3, 1))
             add_enemy_counter = 0
 
         # Update all the objects
@@ -358,10 +366,11 @@ def game():
             
             for missile_obj in missile_sprite:
                 if enemy.rect.collidepoint(missile_obj.rect.center):  # If the missile hit the enemy
-                    enemy.lifes -= 1
-                    if enemy.lifes <= 0:   # If the enemy dies
+                    enemy.life -= 1
+                    if enemy.life <= 0:   # If the enemy dies
                         explosion_sprite.add(Explosion(enemy.rect.center))  # Draw the explosion
                         enemy.kill()
+                        points += enemy.points
                     missile_obj.kill()
         
         for missile_obj in missile_sprite:
@@ -371,6 +380,8 @@ def game():
         
         for explosion in explosion_sprite:
             explosion.update()
+
+        scoreboard.update(points)
 
         pg.display.update()
 
