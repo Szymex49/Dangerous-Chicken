@@ -3,10 +3,23 @@
 
 import pygame as pg
 from pygame.locals import *
+import os
+import sys
+import pickle
+import math
+import random
+import datetime
 
-screen_width = 750
-screen_height = 750
-screen = pg.display.set_mode((screen_width, screen_height))
+SCREEN_WIDTH = 750
+SCREEN_HEIGHT = 750
+SCREEN = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+MUSIC_VOLUME = 0.2
+SOUNDS_VOLUME = 0.3
+
+ranking_file = open('files\\ranking', 'rb')
+RANKING = pickle.load(ranking_file)
+ranking_file.close()
 
 
 def load_image(filename:str, erase_bg=True):
@@ -36,7 +49,7 @@ def draw_text(text:str, position:tuple, font:object, rgb_color:tuple):
     text_obj = font.render(text, 1, rgb_color)
     text_rect = text_obj.get_rect()
     text_rect.center = position
-    screen.blit(text_obj, text_rect)
+    SCREEN.blit(text_obj, text_rect)
     return text_rect
 
 
@@ -53,18 +66,32 @@ def draw_lifes(lifes):
     heart_rect3.topleft = (670, 0)
 
     if lifes == 0:
-        screen.blit(empty_heart, heart_rect1)
-        screen.blit(empty_heart, heart_rect2)
-        screen.blit(empty_heart, heart_rect3)
+        SCREEN.blit(empty_heart, heart_rect1)
+        SCREEN.blit(empty_heart, heart_rect2)
+        SCREEN.blit(empty_heart, heart_rect3)
     if lifes == 1:
-        screen.blit(full_heart, heart_rect1)
-        screen.blit(empty_heart, heart_rect2)
-        screen.blit(empty_heart, heart_rect3)
+        SCREEN.blit(full_heart, heart_rect1)
+        SCREEN.blit(empty_heart, heart_rect2)
+        SCREEN.blit(empty_heart, heart_rect3)
     if lifes == 2:
-        screen.blit(full_heart, heart_rect1)
-        screen.blit(full_heart, heart_rect2)
-        screen.blit(empty_heart, heart_rect3)
+        SCREEN.blit(full_heart, heart_rect1)
+        SCREEN.blit(full_heart, heart_rect2)
+        SCREEN.blit(empty_heart, heart_rect3)
     if lifes == 3:
-        screen.blit(full_heart, heart_rect1)
-        screen.blit(full_heart, heart_rect2)
-        screen.blit(full_heart, heart_rect3)
+        SCREEN.blit(full_heart, heart_rect1)
+        SCREEN.blit(full_heart, heart_rect2)
+        SCREEN.blit(full_heart, heart_rect3)
+    
+
+def update_ranking(score):
+    """Add new score to the ranking and remove the the score on the last position."""
+    global RANKING
+    date = str(datetime.date.today())
+    date = date.replace('-', '.')
+    RANKING[score] = date   # New score
+    RANKING = {key:RANKING[key] for key in sorted(RANKING.keys())[-5:]}  # Add new score and sort
+
+    os.remove('files\\ranking')
+    ranking_file = open('files\\ranking', 'wb')
+    pickle.dump(RANKING, ranking_file)
+    ranking_file.close()
