@@ -3,10 +3,12 @@ from pygame.locals import *
 from tools import *
 from classes import *
 import sys
+import random
 
 
 # Main options
 pg.init()
+pg.mixer.set_num_channels(20)
 clock = pg.time.Clock()
 menu_font = pg.font.SysFont('Calibri', 80)
 
@@ -25,6 +27,8 @@ def menu():
     transition = True
     transition_to = False
     alpha = 255   # Transparence
+
+    play_music('bg_music.wav', 0.3)
 
     while True:
         screen.fill((0, 0, 0))
@@ -192,9 +196,9 @@ def game_over():
 
     global running_game, running_game_over, restart
     game_over_end = False
+    running_game_over = True
     alpha = 0   # Transparence
     go_to = ''
-    running_game_over = True
 
     while running_game_over:
         screen.fill((0, 0, 0))
@@ -244,12 +248,17 @@ def game():
     """Start the game."""
 
     global running_game
+    running_game = True
     transition = True
     alpha = 255   # Transparence
-    running_game = True
+    time = 0
 
     # Background
     background = load_image('background.jpg', False)
+
+    # Sounds
+    explosion_sound = load_sound('explosion_sound.mp3')
+    laser_sound = load_sound('laser_sound.mp3')
 
     # Character
     hero_sprite = pg.sprite.Group()
@@ -276,6 +285,8 @@ def game():
         clock.tick(60)
         screen.blit(background, (0, 0))
         points = 0
+        time += 1
+        difficulty = math.sqrt(time)
 
         # Clear the screen
         hero_sprite.clear(screen, background)
@@ -343,11 +354,21 @@ def game():
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 aim = pg.mouse.get_pos()
                 missile_sprite.add(Missile(hero.rect.center, aim, 8))
+                laser_sound.play()
 
         # Add enemies
-        add_enemy_counter += 1
-        if add_enemy_counter == 150:
-            enemy_sprite.add(Enemy((50, 50), 3, 3, 1))
+        add_enemy_counter += time**(1.0/6.0)
+        if add_enemy_counter >= 500:
+            spawn_points = [(screen_width/2, -100),
+                            (screen_width/2, screen_height+100),
+                            (-100, screen_height/2),
+                            (screen_width+100, screen_height/2),
+                            (screen_width+100, screen_height+100),
+                            (-100, screen_height),
+                            (screen_width, -100),
+                            (-100, -100)]
+            spawn_point = random.choice(spawn_points)
+            enemy_sprite.add(Enemy(spawn_point, 3, 3, 1))
             add_enemy_counter = 0
 
         # Update all the objects
@@ -359,6 +380,7 @@ def game():
             # If the enemy caught up with the hero
             if hero.rect.collidepoint(enemy.rect.center):
                 explosion_sprite.add(Explosion(enemy.rect.center))  # Draw the explosion of the enemy
+                explosion_sound.play()
                 enemy.kill()
                 hero.life -= 1
                 if hero.life <= 0:  # If the hero's life has ended - GAME OVER
@@ -369,6 +391,7 @@ def game():
                     enemy.life -= 1
                     if enemy.life <= 0:   # If the enemy dies
                         explosion_sprite.add(Explosion(enemy.rect.center))  # Draw the explosion
+                        explosion_sound.play()
                         enemy.kill()
                         points += enemy.points
                     missile_obj.kill()

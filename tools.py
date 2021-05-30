@@ -18,8 +18,17 @@ def load_image(filename:str, erase_bg=True):
     return image
 
 
-def load_sound(filename:str):
-    return pg.mixer.Sound('files\\' + filename)
+def load_sound(filename:str, volume=0.5):
+    sound = pg.mixer.Sound('files\\' + filename)
+    sound.set_volume(volume)
+    return sound
+
+
+def play_music(filename:str, volume=0.5):
+    """Play looped music from a file."""
+    pg.mixer.music.load('files\\' + filename)
+    pg.mixer.music.set_volume(volume)
+    pg.mixer.music.play(-1)
 
 
 def draw_text(text:str, position:tuple, font:object, rgb_color:tuple):

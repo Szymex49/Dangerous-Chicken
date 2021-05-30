@@ -1,9 +1,10 @@
 """A module with classes designed for creating objects in game.
-List of objects:
+List of classes:
  - main hero
  - enemy
  - missile
  - explosion
+ - scoreboard
 """
 
 import pygame as pg
@@ -85,7 +86,7 @@ class Missile(pg.sprite.Sprite):
         else:
             angle = 180 * math.acos(-x_dist / dist) / math.pi + 180
 
-        self.image = pg.transform.rotate(pg.transform.scale(load_image('rocket.png'), (80, 40)), angle)
+        self.image = pg.transform.rotate(pg.transform.scale(load_image('laser.png'), (60, 20)), angle)
         self.rect = self.image.get_rect()
         self.rect.center = start_position
         
