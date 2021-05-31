@@ -133,11 +133,32 @@ class ScoreBoard(pg.sprite.Sprite):
 
 
 class Slider(pg.sprite.Sprite):
-    def __init__(self, position:tuple):
+    def __init__(self, position:tuple, volume:float):
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.transform.scale(load_image('slider.png'), (15, 40))
+        self.volume = volume
+        self.delta = 45  # Distance from both sides where the axis ends
+
+        # Axis
+        self.image = pg.transform.scale(load_image('axis.png'), (500, 80))
         self.rect = self.image.get_rect()
         self.rect.center = position
 
+        # Slider
+        self.slider_im = pg.transform.scale(load_image('slider.png'), (16, 40))
+        self.slider_rect = self.slider_im.get_rect()
+        self.length = self.rect.right - self.rect.left - 2 * self.delta - self.slider_rect.width   # Length of the axis
+        self.slider_rect.center = (self.volume * self.length + self.rect.left + self.delta + self.slider_rect.width/2, position[1])
+
+        SCREEN.blit(self.slider_im, self.slider_rect)
+
     def update(self, shift):
-        self.rect.move_ip((shift, 0))
+        """Update the position of the slider and draw it on the screen. Calculate the volume."""
+        self.slider_rect.move_ip((shift, 0))
+        # If goes out of range
+        if self.slider_rect.right >= self.rect.right - self.delta:
+            self.slider_rect.right = self.rect.right - self.delta
+        elif self.slider_rect.left <= self.rect.left + self.delta:
+            self.slider_rect.left = self.rect.left + self.delta
+        # Calculate the volume
+        self.volume = (self.slider_rect.center[0] - self.rect.left - self.delta - self.slider_rect.width/2) / self.length
+        SCREEN.blit(self.slider_im, self.slider_rect)

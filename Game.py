@@ -7,7 +7,6 @@ pg.mixer.set_num_channels(20)
 CLOCK = pg.time.Clock()
 MENU_FONT = pg.font.SysFont('Calibri', 80)
 
-running_options = True
 running_pause = True
 running_game = True
 running_game_over = True
@@ -24,7 +23,7 @@ def menu():
     alpha = 255   # Transparence
     go_to = ''
 
-    play_music('bg_music.wav', MUSIC_VOLUME)
+    play_music('menu_music.wav', MUSIC_VOLUME)
 
     while True:
         SCREEN.fill((0, 0, 0))
@@ -51,7 +50,7 @@ def menu():
                     restart = True
                     while restart:
                         game()
-                    play_music('bg_music.wav', MUSIC_VOLUME)
+                    play_music('menu_music.wav', MUSIC_VOLUME)
                 elif go_to == 'options':
                     options()
                 elif go_to == 'ranking':
@@ -83,6 +82,7 @@ def menu():
 
         if play_button.collidepoint(mx, my) and click:
             transition_to = True
+            pg.mixer.music.fadeout(500)   # Music fadeout
             go_to = 'game'
         elif rules_button.collidepoint(mx, my) and click:
             pass
@@ -105,7 +105,7 @@ def menu():
 def options():
     """Display the game options and allow the user to customize them."""
 
-    global running_options
+    global MUSIC_VOLUME, SOUNDS_VOLUME
     running_options = True
     transition_from = True
     transition_to = False
@@ -116,21 +116,12 @@ def options():
     SCREEN.fill((0, 0, 0))
     background = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
     background.fill((0, 0, 0))
-    axis_im = pg.transform.scale(load_image('axis.png'), (500, 80))
 
-    # Music volume slider
     draw_text('Music volume', (SCREEN_WIDTH/2, 100), MENU_FONT, (255, 255, 255))
-    music_vol_im = axis_im.get_rect()
-    music_vol_im.center = (SCREEN_WIDTH/2, 200)
-    SCREEN.blit(axis_im, music_vol_im)
-    music_slider = Slider((SCREEN_WIDTH/2, 200))
-
-    # Sounds volume slider
     draw_text('Sounds volume', (SCREEN_WIDTH/2, 300), MENU_FONT, (255, 255, 255))
-    sounds_vol_im = axis_im.get_rect()
-    sounds_vol_im.center = (SCREEN_WIDTH/2, 400)
-    SCREEN.blit(axis_im, sounds_vol_im)
-    sounds_slider = Slider((SCREEN_WIDTH/2, 400))
+
+    music_slider = Slider((SCREEN_WIDTH/2, 200), MUSIC_VOLUME)
+    sounds_slider = Slider((SCREEN_WIDTH/2, 400), SOUNDS_VOLUME)
 
     slider_sprite = pg.sprite.Group()
     slider_sprite.add(music_slider)
@@ -153,12 +144,12 @@ def options():
 
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 click = True
-                if music_slider.rect.collidepoint(event.pos):
+                if music_slider.slider_rect.collidepoint(event.pos):
                     music_slide = True
-                    dist_x = music_slider.rect.center[0] - mx
-                elif sounds_slider.rect.collidepoint(event.pos):
+                    dist_x = music_slider.slider_rect.center[0] - mx
+                elif sounds_slider.slider_rect.collidepoint(event.pos):
                     sounds_slide = True
-                    dist_x = sounds_slider.rect.center[0] - mx
+                    dist_x = sounds_slider.slider_rect.center[0] - mx
 
             elif event.type == MOUSEBUTTONUP and event.button == 1:
                 music_slide = False
@@ -166,17 +157,20 @@ def options():
 
             elif event.type == MOUSEMOTION:
                 if music_slide:
-                    music_shift = mx + dist_x - music_slider.rect.center[0]
+                    music_shift = mx + dist_x - music_slider.slider_rect.center[0]
                 elif sounds_slide:
-                    sounds_shift = mx + dist_x - sounds_slider.rect.center[0]
+                    sounds_shift = mx + dist_x - sounds_slider.slider_rect.center[0]
 
-        SCREEN.blit(axis_im, music_vol_im)
-        SCREEN.blit(axis_im, sounds_vol_im)
+        slider_sprite.clear(SCREEN, background)
+        slider_sprite.draw(SCREEN)
 
         music_slider.update(music_shift)
         sounds_slider.update(sounds_shift)
-        slider_sprite.clear(SCREEN, background)
-        slider_sprite.draw(SCREEN)
+
+        MUSIC_VOLUME = music_slider.volume
+        SOUNDS_VOLUME = sounds_slider.volume
+
+        pg.mixer.music.set_volume(MUSIC_VOLUME)
 
         pg.display.update()
         CLOCK.tick(60)
@@ -189,25 +183,22 @@ def ranking():
     transition_from = True
     transition_to = False
     alpha = 255
-
-    SCREEN.fill((0, 0, 0))
-    draw_text('RANKING', (SCREEN_WIDTH/2, 100), MENU_FONT, (0, 0, 200))
-
-    position = 200
-    for score, date in zip(RANKING.keys(), RANKING.values()):
-        draw_text(str(score), (150, position), MENU_FONT, (255, 255, 255))
-        draw_text(str(date), (500, position), MENU_FONT, (255, 255, 255))
-        position += 100
+    
+    ranking_file = open('files\\ranking', 'rb')
+    RANKING = pickle.load(ranking_file)
+    ranking_file.close()
 
     while running_ranking:
+
         SCREEN.fill((0, 0, 0))
         draw_text('RANKING', (SCREEN_WIDTH/2, 100), MENU_FONT, (0, 0, 200))
 
-        position = 200
-        for score, date in zip(RANKING.keys(), RANKING.values()):
+        # Draw the best scores and their dates
+        position = 600
+        for score, date in zip(RANKING[0], RANKING[1]):
             draw_text(str(score), (150, position), MENU_FONT, (255, 255, 255))
             draw_text(str(date), (500, position), MENU_FONT, (255, 255, 255))
-            position += 100
+            position -= 100
 
         # Make transition from ranking to menu
         if transition_to:
@@ -258,6 +249,9 @@ def game():
 
     # Background
     background = load_image('background.jpg', False)
+
+    # Music
+    play_music('game_music.wav', MUSIC_VOLUME)
 
     # Sounds
     explosion_sound = load_sound('explosion_sound.mp3', SOUNDS_VOLUME)
@@ -346,7 +340,7 @@ def game():
 
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    pause()
+                    pause(scoreboard.score)
 
                 # WSAD - moving the character
                 if event.key == K_a:
@@ -428,7 +422,7 @@ def game():
         pg.display.update()
 
 
-def pause():
+def pause(score=None):
     """Pause the game and display a pause screen."""
 
     global running_game, running_pause, restart
@@ -467,6 +461,7 @@ def pause():
         click = False
         for event in pg.event.get():
             if event.type == QUIT:
+                update_ranking(score)
                 pg.quit()
                 sys.exit()
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
@@ -479,9 +474,12 @@ def pause():
             running_pause = False
             SCREEN.blit(background, (0, 0))   # Restore the background
         if restart_button.collidepoint(mx, my) and click:
+            update_ranking(score)
             transition_to = True
             alpha = 0
         if menu_button.collidepoint(mx, my) and click:
+            update_ranking(score)
+            pg.mixer.music.fadeout(1000)   # Music fadeout
             transition_to = True
             alpha = 0
             go_to = 'menu'

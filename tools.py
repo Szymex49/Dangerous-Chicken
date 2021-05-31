@@ -14,8 +14,8 @@ SCREEN_WIDTH = 750
 SCREEN_HEIGHT = 750
 SCREEN = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-MUSIC_VOLUME = 0.2
-SOUNDS_VOLUME = 0.3
+MUSIC_VOLUME = 0.5
+SOUNDS_VOLUME = 0.5
 
 ranking_file = open('files\\ranking', 'rb')
 RANKING = pickle.load(ranking_file)
@@ -31,13 +31,13 @@ def load_image(filename:str, erase_bg=True):
     return image
 
 
-def load_sound(filename:str, volume=0.5):
+def load_sound(filename:str, volume=SOUNDS_VOLUME):
     sound = pg.mixer.Sound('files\\' + filename)
     sound.set_volume(volume)
     return sound
 
 
-def play_music(filename:str, volume=0.5):
+def play_music(filename:str, volume=MUSIC_VOLUME):
     """Play looped music from a file."""
     pg.mixer.music.load('files\\' + filename)
     pg.mixer.music.set_volume(volume)
@@ -88,8 +88,23 @@ def update_ranking(score):
     global RANKING
     date = str(datetime.date.today())
     date = date.replace('-', '.')
-    RANKING[score] = date   # New score
-    RANKING = {key:RANKING[key] for key in sorted(RANKING.keys())[-5:]}  # Add new score and sort
+
+    # Insert the score to the ranking
+    pos = 0
+    for item in RANKING[0]:
+        if score <= item:
+            RANKING[0].insert(pos, score)
+            RANKING[1].insert(pos, date)
+            break
+        pos += 1
+    if score >= RANKING[0][-1]:
+        RANKING[0].append(score)
+        RANKING[1].append(date)
+
+    # Remove the lowest score
+    while len(RANKING[0]) > 5:
+        RANKING[0].pop(0)
+        RANKING[1].pop(0)
 
     os.remove('files\\ranking')
     ranking_file = open('files\\ranking', 'wb')
