@@ -15,7 +15,7 @@ class Player(pg.sprite.Sprite):
 
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.transform.scale(load_image('player.jpg'), (100, 100))
+        self.image = pg.transform.scale(load_image('player.png'), (100, 100))
         self.rect = self.image.get_rect()
         self.rect.center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
         self.x_velocity = 0
@@ -40,7 +40,7 @@ class Enemy(pg.sprite.Sprite):
 
     def __init__(self, starting_position:tuple, velocity:int, life:int, points:int):
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.transform.scale(load_image('enemy.jpg'), (100, 100))
+        self.image = pg.transform.scale(load_image('rooster.png'), (100, 100))
         self.rect = self.image.get_rect()
         self.rect.center = starting_position
         self.x_velocity = 0
@@ -67,7 +67,7 @@ class ShootingTower(pg.sprite.Sprite):
 
     def __init__(self, position:tuple, life:int, points:int):
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.transform.scale(load_image('shooting_tower.png'), (120, 120))
+        self.image = pg.transform.scale(load_image('cow.png'), (120, 120))
         self.rect = self.image.get_rect()
         self.rect.center = position
         self.life = life
@@ -119,12 +119,12 @@ class Missile(pg.sprite.Sprite):
         # Choose the image depending on what kind was chosen
         if kind == 'blue':
             filename = 'blue_laser.png'
-        elif kind == 'pink':
-            filename = 'pink_laser.png'
-        elif kind == 'harnold':
-            filename = 'harnold.jpg'
+        elif kind == 'red':
+            filename = 'red_laser.png'
         elif kind == 'orange':
             filename = 'orange_laser.png'
+        elif kind == 'harnold':
+            filename = 'harnold.jpg'
         
         self.image = pg.transform.rotate(pg.transform.scale(load_image(filename), (35, 12)), angle)
         self.rect = self.image.get_rect()
@@ -235,3 +235,17 @@ class Slider(pg.sprite.Sprite):
         # Calculate the volume
         self.volume = (self.slider_rect.center[0] - self.rect.left - self.delta - self.slider_rect.width/2) / self.length
         SCREEN.blit(self.slider_im, self.slider_rect)
+
+
+class Cursor(pg.sprite.Sprite):
+
+    def __init__(self):
+        self.arrow = pg.transform.scale(load_image('cursor.png'), (20, 20))
+        self.crosshair = pg.transform.scale(load_image('crosshair.png'), (20, 20))
+        self.image = self.arrow
+        self.rect = self.image.get_rect()
+        self.rect.topleft = pg.mouse.get_pos()
+    
+    def update(self):
+        self.rect.topleft = pg.mouse.get_pos()
+        SCREEN.blit(self.image, self.rect)

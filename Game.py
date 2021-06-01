@@ -4,8 +4,16 @@ from classes import *
 # Main options
 pg.init()
 pg.mixer.set_num_channels(25)
+pg.mouse.set_visible(False)
 CLOCK = pg.time.Clock()
 MENU_FONT = pg.font.SysFont('Calibri', 80)
+
+#ARROW_CURSOR = pg.transform.scale(load_image('cursor.png'), (20, 20))
+#CROSSHAIR_CURSOR = pg.transform.scale(load_image('crosshair.png'), (20, 20))
+#CURSOR_RECT = ARROW_CURSOR.get_rect()
+#CURSOR = ARROW_CURSOR
+
+CURSOR = Cursor()
 
 running_pause = True
 running_game = True
@@ -24,7 +32,7 @@ transition = False
 def menu():
     """Display the main menu of the game."""
 
-    global restart
+    global restart, CURSOR
     transition_from = True
     transition_to = False
     alpha = 255   # Transparence
@@ -58,6 +66,7 @@ def menu():
                     while restart:
                         game()
                     play_music('menu_music.wav', MUSIC_VOLUME)
+                    CURSOR.image = CURSOR.arrow
                 elif go_to == 'options':
                     options()
                 elif go_to == 'ranking':
@@ -66,6 +75,7 @@ def menu():
                 transition_to = False
                 alpha = 255
             CLOCK.tick(60)
+            CURSOR.update()
             pg.display.update()
             continue
         
@@ -105,8 +115,9 @@ def menu():
             pg.quit()
             sys.exit()
 
+        CURSOR.update()
         pg.display.update()
-        CLOCK.tick(60)
+        CLOCK.tick(80)
 
 
 
@@ -115,7 +126,7 @@ def menu():
 def options():
     """Display the game options and allow the user to customize them."""
 
-    global MUSIC_VOLUME, SOUNDS_VOLUME
+    global MUSIC_VOLUME, SOUNDS_VOLUME, CURSOR
     running_options = True
     transition_from = True
     transition_to = False
@@ -123,12 +134,8 @@ def options():
     music_slide = False
     sounds_slide = False
 
-    SCREEN.fill((0, 0, 0))
     background = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
     background.fill((0, 0, 0))
-
-    draw_text('Music volume', (SCREEN_WIDTH/2, 100), MENU_FONT, (255, 255, 255))
-    draw_text('Sounds volume', (SCREEN_WIDTH/2, 300), MENU_FONT, (255, 255, 255))
 
     music_slider = Slider((SCREEN_WIDTH/2, 200), MUSIC_VOLUME)
     sounds_slider = Slider((SCREEN_WIDTH/2, 400), SOUNDS_VOLUME)
@@ -141,6 +148,10 @@ def options():
         mx, my = pg.mouse.get_pos()  # Mouse position
         music_shift = 0
         sounds_shift = 0
+
+        SCREEN.fill((0, 0, 0))
+        draw_text('Music volume', (SCREEN_WIDTH/2, 100), MENU_FONT, (255, 255, 255))
+        draw_text('Sounds volume', (SCREEN_WIDTH/2, 300), MENU_FONT, (255, 255, 255))
 
         click = False
         for event in pg.event.get():
@@ -182,6 +193,7 @@ def options():
 
         pg.mixer.music.set_volume(MUSIC_VOLUME)
 
+        CURSOR.update()
         pg.display.update()
         CLOCK.tick(60)
 
@@ -192,6 +204,7 @@ def options():
 def ranking():
     """Display the screen with ranking of the best scores."""
 
+    global CURSOR
     running_ranking = True
     transition_from = True
     transition_to = False
@@ -224,6 +237,7 @@ def ranking():
             if alpha >= 255:
                 running_ranking = False
             CLOCK.tick(60)
+            CURSOR.update()
             pg.display.update()
             continue
 
@@ -246,6 +260,7 @@ def ranking():
             if event.type == KEYDOWN and event.key == K_ESCAPE:
                 transition_to = True
         
+        CURSOR.update()
         pg.display.update()
         CLOCK.tick(60)
 
@@ -261,18 +276,23 @@ def ranking():
 def game():
     """Start the game."""
 
-    global running_game
+    global running_game, CURSOR
+    CURSOR.image = CURSOR.crosshair
     running_game = True
     transition_from = True
     game_end = False
     alpha = 255   # Transparence
     time = 0
 
-    # Brighten images of enemies to display when hit
-    brighten_enemy = pg.transform.scale(load_image('brighten_enemy.jpg'), (100, 100))
-    enemy_image = pg.transform.scale(load_image('enemy.jpg'), (100, 100))
-    brighten_tower = pg.transform.scale(load_image('brighten_tower.png'), (120, 120))
-    tower_image = pg.transform.scale(load_image('shooting_tower.png'), (120, 120))
+    # Images
+    player_image = pg.transform.scale(load_image('player.png'), (100, 100))
+    brighten_player = pg.transform.scale(load_image('brighten_player.png'), (100, 100))
+    enemy_image = pg.transform.scale(load_image('rooster.png'), (100, 100))
+    brighten_enemy = pg.transform.scale(load_image('brighten_rooster.png'), (100, 100))
+    tower_image = pg.transform.scale(load_image('cow.png'), (120, 120))
+    brighten_tower = pg.transform.scale(load_image('brighten_cow.png'), (120, 120))
+    horse_image = pg.transform.scale(load_image('horse.jpg'), (150, 150))
+    brighten_horse = pg.transform.scale(load_image('brighten_horse.jpg'), (150, 150))
 
     # Background
     background = load_image('background.jpg', False)
@@ -283,8 +303,8 @@ def game():
     # Sounds
     explosion_sound = load_sound('explosion_sound.mp3', SOUNDS_VOLUME)
     laser_sound = load_sound('laser_sound.mp3', SOUNDS_VOLUME)
-    fireball_sound = load_sound('fireball_sound.mp3', SOUNDS_VOLUME)
-    damage_sound = load_sound('damage_sound.mp3', SOUNDS_VOLUME)
+    fireball_sound = load_sound('fireball_sound.mp3', 1.6*SOUNDS_VOLUME)
+    damage_sound = load_sound('damage_sound.mp3', 1.2*SOUNDS_VOLUME)
     player_death_sound = load_sound('player_death_sound.mp3', SOUNDS_VOLUME*1.5)
 
     # Character
@@ -387,6 +407,7 @@ def game():
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     pause(scoreboard.score)
+                    CURSOR.image = CURSOR.crosshair
 
                 # WSAD - moving the character
                 if event.key == K_a:
@@ -448,7 +469,7 @@ def game():
 
         # Add horses
         add_horse_counter += difficulty
-        if add_horse_counter >= 3500 and time > 1000:
+        if add_horse_counter >= 3500 and time > 5000:
             side = random.choice(['left', 'right'])
             spawn_position = random.randint(100, SCREEN_HEIGHT - 100)
             horse = Horse(spawn_position, side, 6, 5)
@@ -459,6 +480,7 @@ def game():
 
         # Update all the objects
         player.update()
+        player.image = player_image
 
         # ENEMIES
         for enemy in enemy_sprite:
@@ -472,6 +494,7 @@ def game():
                 explosion_sound.play()
                 damage_sound.play()
                 enemy.kill()
+                player.image = brighten_player
                 player.life -= 1
 
                 if player.life <= 0:   # ====== GAME OVER ======
@@ -503,7 +526,7 @@ def game():
 
             shooting_counter += 1
             if shooting_counter >= 61:
-                enemy_missile_sprite.add(Missile(tower.rect.center, player.rect.center, 6, 'orange'))
+                enemy_missile_sprite.add(Missile(tower.rect.center, player.rect.center, 6, 'red'))
                 laser_sound.play()
                 shooting_counter = 0
 
@@ -514,6 +537,7 @@ def game():
                 explosion_sound.play()
                 damage_sound.play()
                 tower.kill()
+                player.image = brighten_player
                 player.life -= 1
 
                 if player.life <= 0:   # ====== GAME OVER ======
@@ -542,6 +566,7 @@ def game():
         # HORSES
         for horse in horse_sprite:
             horse.update()
+            horse.image = horse_image
 
             horse_shooting_counter += 1
             if horse_shooting_counter >= 200:
@@ -556,6 +581,7 @@ def game():
                 explosion_sound.play()
                 damage_sound.play()
                 horse.kill()
+                player.image = brighten_player
                 player.life -= 1
 
                 if player.life <= 0:   # ====== GAME OVER ======
@@ -573,7 +599,7 @@ def game():
                 if horse.rect.collidepoint(missile.rect.center):
                     horse.life -= 1
                     missile.kill()
-                    #horse.image = brighten_tower
+                    horse.image = brighten_horse
                     if horse.life <= 0:   # If the horse dies
                         explosion_sprite.add(Explosion(horse.rect.center, 'explosion', (200, 200)))
                         explosion_sound.play()
@@ -591,9 +617,11 @@ def game():
 
             # If the missile hit the player
             if player.rect.collidepoint(missile.rect.center) and not game_end:
-                player.life -= 1
-                damage_sound.play()
+
                 missile.kill()
+                player.image = brighten_player
+                damage_sound.play()
+                player.life -= 1
 
                 if player.life <= 0:   # ====== GAME OVER ======
                     explosion_sprite.add(Explosion(player.rect.center, 'explosion', (150, 150)))
@@ -607,6 +635,7 @@ def game():
 
 
         scoreboard.update(points)
+        CURSOR.update()
         pg.display.update()
 
 
@@ -616,7 +645,8 @@ def game():
 def pause(score=None):
     """Pause the game and display a pause screen."""
 
-    global running_game, running_pause, restart
+    global running_game, running_pause, restart, CURSOR
+    CURSOR.image = CURSOR.arrow
     transition_to = False
     alpha = 0   # Transparence
     go_to = ''
@@ -646,6 +676,7 @@ def pause(score=None):
                 if go_to == 'menu':  # If menu was chosen, do not restart the game
                     restart = False
             CLOCK.tick(60)
+            CURSOR.update()
             pg.display.update()
             continue
 
@@ -675,6 +706,7 @@ def pause(score=None):
             alpha = 0
             go_to = 'menu'
 
+        CURSOR.update()
         pg.display.update()
         CLOCK.tick(60)
 
@@ -685,7 +717,8 @@ def pause(score=None):
 def game_over():
     """Display a 'game over' screen."""
 
-    global running_game, running_game_over, restart
+    global running_game, running_game_over, restart, CURSOR
+    CURSOR.image = CURSOR.arrow
     transition_from = True
     transition_to = False
     running_game_over = True
@@ -718,6 +751,7 @@ def game_over():
                 if go_to == 'menu':   # If menu was chosen, do not restart the game
                     restart = False
             CLOCK.tick(60)
+            CURSOR.update()
             pg.display.update()
             continue
         
@@ -747,6 +781,7 @@ def game_over():
             alpha = 0
             go_to = 'menu'
 
+        CURSOR.update()
         pg.display.update()
         CLOCK.tick(60)
 

@@ -10,15 +10,12 @@ import math
 import random
 import datetime
 
-SCREEN_WIDTH = 750
-SCREEN_HEIGHT = 750
-#SCREEN = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 SCREEN = pg.display.set_mode(flags=FULLSCREEN)
 SCREEN_WIDTH = pg.display.get_window_size()[0]
 SCREEN_HEIGHT = pg.display.get_window_size()[1]
 
-MUSIC_VOLUME = 0.5
-SOUNDS_VOLUME = 0.5
+MUSIC_VOLUME = 0.2
+SOUNDS_VOLUME = 0.2
 
 ranking_file = open('files\\ranking', 'rb')
 RANKING = pickle.load(ranking_file)
