@@ -268,8 +268,11 @@ def game():
     alpha = 255   # Transparence
     time = 0
 
+    # Brighten images of enemies to display when hit
     brighten_enemy = pg.transform.scale(load_image('brighten_enemy.jpg'), (100, 100))
     enemy_image = pg.transform.scale(load_image('enemy.jpg'), (100, 100))
+    brighten_tower = pg.transform.scale(load_image('brighten_tower.png'), (120, 120))
+    tower_image = pg.transform.scale(load_image('shooting_tower.png'), (120, 120))
 
     # Background
     background = load_image('background.jpg', False)
@@ -294,6 +297,9 @@ def game():
     tower_sprite = pg.sprite.Group()
     add_tower_counter = 0
     shooting_counter = 0
+    horse_sprite = pg.sprite.Group()
+    add_horse_counter = 0
+    horse_shooting_counter = 0
 
     # Missiles
     missile_sprite = pg.sprite.Group()
@@ -312,8 +318,10 @@ def game():
         SCREEN.blit(background, (0, 0))
         points = 0
         time += 1
+        difficulty = time**(1.0/6.0)
 
         # Clear the SCREEN
+        horse_sprite.clear(SCREEN, background)
         tower_sprite.clear(SCREEN, background)
         player_sprite.clear(SCREEN, background)
         enemy_sprite.clear(SCREEN, background)
@@ -323,6 +331,7 @@ def game():
         scoreboard_sprite.clear(SCREEN, background)
 
         # Draw the objects
+        horse_sprite.draw(SCREEN)
         tower_sprite.draw(SCREEN)
         player_sprite.draw(SCREEN)
         enemy_sprite.draw(SCREEN)
@@ -368,6 +377,7 @@ def game():
                 transition_from = False
 
 
+        # EVENTS
         for event in pg.event.get():
             if event.type == QUIT:
                 pg.quit()
@@ -404,7 +414,7 @@ def game():
 
 
         # Add enemies
-        add_enemy_counter += time**(1.0/6.0)
+        add_enemy_counter += difficulty
         if add_enemy_counter >= 500:
             spawn_points = [(SCREEN_WIDTH/2, -100),
                             (SCREEN_WIDTH/2, SCREEN_HEIGHT+100),
@@ -419,7 +429,7 @@ def game():
             add_enemy_counter = 0
         
         # Add towers
-        add_tower_counter += time**(1.0/6.0)
+        add_tower_counter += difficulty
         if add_tower_counter >= 2000:
             spawn_point = [0, 0]
             if player.rect.center[0] >= SCREEN_WIDTH/2:
@@ -435,10 +445,21 @@ def game():
             tower_sprite.add(ShootingTower(spawn_point, 6, 3))
             add_tower_counter = 0
 
+        # Add horses
+        add_horse_counter += difficulty
+        if add_horse_counter >= 3000:
+            side = random.choice(['left', 'right'])
+            spawn_position = random.randint(100, SCREEN_HEIGHT - 100)
+            horse = Horse(spawn_position, side, 10, 5)
+            horse_sprite.add(horse)
+            explosion_sprite.add(Explosion(horse.rect.center, 'blue_explosion', (200, 200)))
+            add_horse_counter = 0
+
 
         # Update all the objects
         player.update()
 
+        # ENEMIES
         for enemy in enemy_sprite:
             enemy.update((player.rect.center[0], player.rect.center[1]))
             enemy.image = enemy_image
@@ -452,7 +473,7 @@ def game():
                 enemy.kill()
                 player.life -= 1
 
-                if player.life <= 0:  # If the player's life has ended - GAME OVER
+                if player.life <= 0:   # ====== GAME OVER ======
                     explosion_sprite.add(Explosion(player.rect.center, 'explosion', (150, 150)))
                     explosion_sound.play()
                     player_death_sound.play()
@@ -474,20 +495,42 @@ def game():
                         explosion_sound.play()
                         points += enemy.points
                         enemy.kill()
-    
+
+        # TOWERS
         for tower in tower_sprite:
+            tower.image = tower_image
 
             shooting_counter += 1
             if shooting_counter >= 61:
-                enemy_missile_sprite.add(Missile(tower.rect.center, player.rect.center, 6, 'pink'))
+                enemy_missile_sprite.add(Missile(tower.rect.center, player.rect.center, 6, 'orange'))
                 laser_sound.play()
                 shooting_counter = 0
 
-            # Check if the missile hit the enemy
-            for missile_obj in missile_sprite:
-                if tower.rect.collidepoint(missile_obj.rect.center):
+            # Check if  the player collided with the tower
+            if player.rect.collidepoint(tower.rect.center) and not game_end:
+
+                explosion_sprite.add(Explosion(tower.rect.center, 'explosion', (200, 200)))
+                explosion_sound.play()
+                damage_sound.play()
+                tower.kill()
+                player.life -= 1
+
+                if player.life <= 0:   # ====== GAME OVER ======
+                    explosion_sprite.add(Explosion(player.rect.center, 'explosion', (150, 150)))
+                    explosion_sound.play()
+                    player_death_sound.play()
+                    pg.mixer.music.fadeout(2000)
+                    player.kill()
+                    update_ranking(scoreboard.score)
+                    game_end = True
+                    alpha = -700
+
+            # Check if the missile hit the tower
+            for missile in missile_sprite:
+                if tower.rect.collidepoint(missile.rect.center):
                     tower.life -= 1
-                    missile_obj.kill()
+                    missile.kill()
+                    tower.image = brighten_tower
                     if tower.life <= 0:   # If the tower dies
                         explosion_sprite.add(Explosion(tower.rect.center, 'explosion', (200, 200)))
                         explosion_sound.play()
@@ -495,27 +538,68 @@ def game():
                         points += tower.points
         
 
+        # HORSES
+        for horse in horse_sprite:
+            horse.update()
+
+            horse_shooting_counter += 1
+            if horse_shooting_counter >= 100:
+                enemy_missile_sprite.add(Missile(horse.rect.center, player.rect.center, 6, 'orange'))
+                laser_sound.play()
+                horse_shooting_counter = 0
+
+            # Check if  the player collided with the horse
+            if player.rect.collidepoint(horse.rect.center) and not game_end:
+
+                explosion_sprite.add(Explosion(horse.rect.center, 'explosion', (200, 200)))
+                explosion_sound.play()
+                damage_sound.play()
+                horse.kill()
+                player.life -= 1
+
+                if player.life <= 0:   # ====== GAME OVER ======
+                    explosion_sprite.add(Explosion(player.rect.center, 'explosion', (150, 150)))
+                    explosion_sound.play()
+                    player_death_sound.play()
+                    pg.mixer.music.fadeout(2000)
+                    player.kill()
+                    update_ranking(scoreboard.score)
+                    game_end = True
+                    alpha = -700
+
+            # Check if the missile hit the horse
+            for missile in missile_sprite:
+                if horse.rect.collidepoint(missile.rect.center):
+                    horse.life -= 1
+                    missile.kill()
+                    #horse.image = brighten_tower
+                    if horse.life <= 0:   # If the horse dies
+                        explosion_sprite.add(Explosion(horse.rect.center, 'explosion', (200, 200)))
+                        explosion_sound.play()
+                        horse.kill()
+                        points += horse.points
+        
+        
         # Update all the player's missiles
-        for missile_obj in missile_sprite:
-            missile_obj.update()
-            if 0 <= missile_obj.rect.center[0] >= SCREEN_WIDTH or 0 >= missile_obj.rect.center[1] >= SCREEN_HEIGHT:
-                missile_obj.kill()
+        for missile in missile_sprite:
+            missile.update()
+            if 0 <= missile.rect.center[0] >= SCREEN_WIDTH or 0 >= missile.rect.center[1] >= SCREEN_HEIGHT:
+                missile.kill()
         
         
         # Update all the enemies' missiles
-        for missile_obj in enemy_missile_sprite:
-            missile_obj.update()
-
-            if 0 <= missile_obj.rect.center[0] >= SCREEN_WIDTH or 0 >= missile_obj.rect.center[1] >= SCREEN_HEIGHT:
-                missile_obj.kill()
+        for missile in enemy_missile_sprite:
+            missile.update()
+            if 0 <= missile.rect.center[0] >= SCREEN_WIDTH or 0 >= missile.rect.center[1] >= SCREEN_HEIGHT:
+                missile.kill()
 
             # If the missile hit the player
-            elif player.rect.collidepoint(missile_obj.rect.center) and not game_end:
+            elif player.rect.collidepoint(missile.rect.center) and not game_end:
                 player.life -= 1
                 damage_sound.play()
-                missile_obj.kill()
+                missile.kill()
 
-                if player.life <= 0:  # If the player's life has ended - GAME OVER
+                if player.life <= 0:   # ====== GAME OVER ======
                     explosion_sprite.add(Explosion(player.rect.center, 'explosion', (150, 150)))
                     explosion_sound.play()
                     player_death_sound.play()
@@ -671,5 +755,7 @@ def game_over():
         CLOCK.tick(60)
 
 
-pg.display.set_caption("fajna gra")
+icon = load_image('icon.png')
+pg.display.set_icon(icon)
+pg.display.set_caption('Dangerous Chicken')
 menu()

@@ -12,7 +12,10 @@ import datetime
 
 SCREEN_WIDTH = 750
 SCREEN_HEIGHT = 750
-SCREEN = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+#SCREEN = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+SCREEN = pg.display.set_mode(flags=FULLSCREEN)
+SCREEN_WIDTH = pg.display.get_window_size()[0]
+SCREEN_HEIGHT = pg.display.get_window_size()[1]
 
 MUSIC_VOLUME = 0.5
 SOUNDS_VOLUME = 0.5
@@ -61,9 +64,9 @@ def draw_lifes(lifes):
     heart_rect1 = full_heart.get_rect()
     heart_rect2 = full_heart.get_rect()
     heart_rect3 = full_heart.get_rect()
-    heart_rect1.topleft = (510, 0)
-    heart_rect2.topleft = (590, 0)
-    heart_rect3.topleft = (670, 0)
+    heart_rect1.topright = (SCREEN_WIDTH - 10, 0)
+    heart_rect2.topright = (SCREEN_WIDTH - 90, 0)
+    heart_rect3.topright = (SCREEN_WIDTH - 170, 0)
 
     if lifes == 0:
         SCREEN.blit(empty_heart, heart_rect1)

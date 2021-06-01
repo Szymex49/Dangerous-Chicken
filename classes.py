@@ -74,10 +74,32 @@ class ShootingTower(pg.sprite.Sprite):
         self.points = points
 
 
+class Horse(pg.sprite.Sprite):
+    """An enemy who moves randomly on one side of the screen and shoots to the player."""
+    def __init__(self, position:int, side:str, life:int, points:int):
+        pg.sprite.Sprite.__init__(self)
+        self.side = side
+        self.image = pg.transform.scale(load_image('horse.jpg'), (150, 150))
+        self.rect = self.image.get_rect()
+        if side == 'left':
+            self.rect.center = (100, position)
+        elif side == 'right':
+            self.rect.center = (SCREEN_WIDTH - 100, position)
+            self.image = pg.transform.flip(self.image, True, False)
+        self.life = life
+        self.points = points
+        self.velocity = 3
+    
+    def update(self):
+        if self.rect.top <= 0 or self.rect.bottom >= SCREEN_HEIGHT or random.randint(1, 250) == 1:
+            self.velocity = -self.velocity
+        self.rect.move_ip((0, self.velocity))
+
+
 class Missile(pg.sprite.Sprite):
     """A missile which moves towards the aim."""
 
-    def __init__(self, start_position:tuple, aim:tuple, velocity:int, color:str):
+    def __init__(self, start_position:tuple, aim:tuple, velocity:int, kind:str):
         pg.sprite.Sprite.__init__(self)
         self.velocity = velocity
         self.aim = aim
@@ -93,11 +115,18 @@ class Missile(pg.sprite.Sprite):
             angle = 180 * math.acos((x_dist / dist)) / math.pi
         else:
             angle = 180 * math.acos(-x_dist / dist) / math.pi + 180
-
-        if color == 'blue':
-            self.image = pg.transform.rotate(pg.transform.scale(load_image('blue_laser.png'), (60, 20)), angle)
-        elif color == 'pink':
-            self.image = pg.transform.rotate(pg.transform.scale(load_image('pink_laser.png'), (60, 20)), angle)
+        
+        # Choose the image depending on what kind was chosen
+        if kind == 'blue':
+            filename = 'blue_laser.png'
+        elif kind == 'pink':
+            filename = 'pink_laser.png'
+        elif kind == 'harnold':
+            filename = 'harnold.jpg'
+        elif kind == 'orange':
+            filename = 'orange_laser.png'
+        
+        self.image = pg.transform.rotate(pg.transform.scale(load_image(filename), (35, 12)), angle)
         self.rect = self.image.get_rect()
         self.rect.center = start_position
         
