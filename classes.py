@@ -62,10 +62,22 @@ class Enemy(pg.sprite.Sprite):
         self.rect.move_ip((self.x_velocity, self.y_velocity))
 
 
+class ShootingTower(pg.sprite.Sprite):
+    """An enemy who doesn't move but shoots to the player."""
+
+    def __init__(self, position:tuple, life:int, points:int):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.transform.scale(load_image('shooting_tower.png'), (120, 120))
+        self.rect = self.image.get_rect()
+        self.rect.center = position
+        self.life = life
+        self.points = points
+
+
 class Missile(pg.sprite.Sprite):
     """A missile which moves towards the aim."""
 
-    def __init__(self, start_position:tuple, aim:tuple, velocity:int):
+    def __init__(self, start_position:tuple, aim:tuple, velocity:int, color:str):
         pg.sprite.Sprite.__init__(self)
         self.velocity = velocity
         self.aim = aim
@@ -82,7 +94,10 @@ class Missile(pg.sprite.Sprite):
         else:
             angle = 180 * math.acos(-x_dist / dist) / math.pi + 180
 
-        self.image = pg.transform.rotate(pg.transform.scale(load_image('laser.png'), (60, 20)), angle)
+        if color == 'blue':
+            self.image = pg.transform.rotate(pg.transform.scale(load_image('blue_laser.png'), (60, 20)), angle)
+        elif color == 'pink':
+            self.image = pg.transform.rotate(pg.transform.scale(load_image('pink_laser.png'), (60, 20)), angle)
         self.rect = self.image.get_rect()
         self.rect.center = start_position
         
@@ -94,10 +109,10 @@ class Missile(pg.sprite.Sprite):
 class Explosion(pg.sprite.Sprite):
     """An animation of explosion displayed when an enemy is destroyed."""
 
-    def __init__(self, position:tuple):
+    def __init__(self, position:tuple, kind:str, size:tuple):
         pg.sprite.Sprite.__init__(self)
         self.position = position
-        self.images = [pg.transform.scale(load_image('explosion\\' + image), (150, 150)) for image in os.listdir('files\explosion')]
+        self.images = [pg.transform.scale(load_image(kind + '\\' + image), size) for image in os.listdir('files\\' + kind)]
         self.image_number = 0
         self.image = self.images[0]
         self.rect = self.image.get_rect()

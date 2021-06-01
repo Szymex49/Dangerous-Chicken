@@ -14,6 +14,13 @@ restart = False
 transition = False
 
 
+# -----------------------------------------------------------------------------------------------------------
+#                                                 MAIN MENU
+# -----------------------------------------------------------------------------------------------------------
+
+
+# ============================  MENU  ============================
+
 def menu():
     """Display the main menu of the game."""
 
@@ -102,6 +109,9 @@ def menu():
         CLOCK.tick(60)
 
 
+
+# ============================  OPTIONS  ============================
+
 def options():
     """Display the game options and allow the user to customize them."""
 
@@ -176,6 +186,9 @@ def options():
         CLOCK.tick(60)
 
 
+
+# ============================  RANKING  ============================
+
 def ranking():
     """Display the screen with ranking of the best scores."""
 
@@ -237,6 +250,14 @@ def ranking():
         CLOCK.tick(60)
 
 
+
+# -----------------------------------------------------------------------------------------------------------
+#                                                 GAME
+# -----------------------------------------------------------------------------------------------------------
+
+
+# ============================  GAME  ============================
+
 def game():
     """Start the game."""
 
@@ -247,6 +268,9 @@ def game():
     alpha = 255   # Transparence
     time = 0
 
+    brighten_enemy = pg.transform.scale(load_image('brighten_enemy.jpg'), (100, 100))
+    enemy_image = pg.transform.scale(load_image('enemy.jpg'), (100, 100))
+
     # Background
     background = load_image('background.jpg', False)
 
@@ -256,19 +280,24 @@ def game():
     # Sounds
     explosion_sound = load_sound('explosion_sound.mp3', SOUNDS_VOLUME)
     laser_sound = load_sound('laser_sound.mp3', SOUNDS_VOLUME)
+    damage_sound = load_sound('damage_sound.mp3', SOUNDS_VOLUME)
+    player_death_sound = load_sound('player_death_sound.mp3', SOUNDS_VOLUME*1.5)
 
     # Character
     player_sprite = pg.sprite.Group()
     player = Player()
     player_sprite.add(player)
 
-    # Enemy
+    # Enemies
     enemy_sprite = pg.sprite.Group()
-    enemy_sprite.add(Enemy((50, 50), 3, 3, 1))
     add_enemy_counter = 0
+    tower_sprite = pg.sprite.Group()
+    add_tower_counter = 0
+    shooting_counter = 0
 
-    # Lasers
+    # Missiles
     missile_sprite = pg.sprite.Group()
+    enemy_missile_sprite = pg.sprite.Group()
 
     # Explosions
     explosion_sprite = pg.sprite.Group()
@@ -285,17 +314,21 @@ def game():
         time += 1
 
         # Clear the SCREEN
+        tower_sprite.clear(SCREEN, background)
         player_sprite.clear(SCREEN, background)
         enemy_sprite.clear(SCREEN, background)
         explosion_sprite.clear(SCREEN, background)
         missile_sprite.clear(SCREEN, background)
+        enemy_missile_sprite.clear(SCREEN, background)
         scoreboard_sprite.clear(SCREEN, background)
 
         # Draw the objects
+        tower_sprite.draw(SCREEN)
         player_sprite.draw(SCREEN)
         enemy_sprite.draw(SCREEN)
         explosion_sprite.draw(SCREEN)
         missile_sprite.draw(SCREEN)
+        enemy_missile_sprite.draw(SCREEN)
         scoreboard_sprite.draw(SCREEN)
 
         # Draw lifes
@@ -311,6 +344,7 @@ def game():
         # Update explosions
         for explosion in explosion_sprite:
             explosion.update()
+
 
         # If the player lost
         if game_end:
@@ -332,6 +366,7 @@ def game():
             alpha -= 10
             if alpha <= 0:
                 transition_from = False
+
 
         for event in pg.event.get():
             if event.type == QUIT:
@@ -364,8 +399,9 @@ def game():
             
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 aim = pg.mouse.get_pos()
-                missile_sprite.add(Missile(player.rect.center, aim, 8))
+                missile_sprite.add(Missile(player.rect.center, aim, 8, 'blue'))
                 laser_sound.play()
+
 
         # Add enemies
         add_enemy_counter += time**(1.0/6.0)
@@ -381,46 +417,121 @@ def game():
             spawn_point = random.choice(spawn_points)
             enemy_sprite.add(Enemy(spawn_point, 3, 3, 1))
             add_enemy_counter = 0
+        
+        # Add towers
+        add_tower_counter += time**(1.0/6.0)
+        if add_tower_counter >= 2000:
+            spawn_point = [0, 0]
+            if player.rect.center[0] >= SCREEN_WIDTH/2:
+                spawn_point[0] = random.randint(70, SCREEN_WIDTH/2 - 70)
+            elif player.rect.center[0] < SCREEN_WIDTH/2:
+                spawn_point[0] = random.randint(SCREEN_WIDTH/2 + 70, SCREEN_WIDTH - 70)
+            if player.rect.center[1] >= SCREEN_HEIGHT/2:
+                spawn_point[1] = random.randint(70, SCREEN_HEIGHT/2 - 70)
+            elif player.rect.center[1] < SCREEN_HEIGHT/2:
+                spawn_point[1] = random.randint(SCREEN_HEIGHT/2 + 70, SCREEN_HEIGHT - 70)
+            spawn_point = tuple(spawn_point)
+            explosion_sprite.add(Explosion(spawn_point, 'blue_explosion', (200, 200)))
+            tower_sprite.add(ShootingTower(spawn_point, 6, 3))
+            add_tower_counter = 0
+
 
         # Update all the objects
         player.update()
 
         for enemy in enemy_sprite:
             enemy.update((player.rect.center[0], player.rect.center[1]))
+            enemy.image = enemy_image
 
             # If the enemy caught up with the player
-            if player.rect.collidepoint(enemy.rect.center):
-                explosion_sprite.add(Explosion(enemy.rect.center))  # Draw the explosion of the enemy
+            if player.rect.collidepoint(enemy.rect.center) and not game_end:
+                
+                explosion_sprite.add(Explosion(enemy.rect.center, 'explosion', (150, 150)))
                 explosion_sound.play()
+                damage_sound.play()
                 enemy.kill()
                 player.life -= 1
+
                 if player.life <= 0:  # If the player's life has ended - GAME OVER
-                    explosion_sprite.add(Explosion(player.rect.center))
+                    explosion_sprite.add(Explosion(player.rect.center, 'explosion', (150, 150)))
+                    explosion_sound.play()
+                    player_death_sound.play()
                     pg.mixer.music.fadeout(2000)   # Music fadeout
                     player.kill()
                     update_ranking(scoreboard.score)
                     game_end = True
                     alpha = -700
             
-            for missile_obj in missile_sprite:
-                if enemy.rect.collidepoint(missile_obj.rect.center):  # If the missile hit the enemy
+            # Check if the missile hit the enemy
+            for missile in missile_sprite:
+                if enemy.rect.collidepoint(missile.rect.center):
                     enemy.life -= 1
+                    missile.kill()
+                    enemy.image = brighten_enemy
+
                     if enemy.life <= 0:   # If the enemy dies
-                        explosion_sprite.add(Explosion(enemy.rect.center))  # Draw the explosion
+                        explosion_sprite.add(Explosion(enemy.rect.center, 'explosion', (150, 150)))
                         explosion_sound.play()
-                        enemy.kill()
                         points += enemy.points
+                        enemy.kill()
+    
+        for tower in tower_sprite:
+
+            shooting_counter += 1
+            if shooting_counter >= 61:
+                enemy_missile_sprite.add(Missile(tower.rect.center, player.rect.center, 6, 'pink'))
+                laser_sound.play()
+                shooting_counter = 0
+
+            # Check if the missile hit the enemy
+            for missile_obj in missile_sprite:
+                if tower.rect.collidepoint(missile_obj.rect.center):
+                    tower.life -= 1
                     missile_obj.kill()
+                    if tower.life <= 0:   # If the tower dies
+                        explosion_sprite.add(Explosion(tower.rect.center, 'explosion', (200, 200)))
+                        explosion_sound.play()
+                        tower.kill()
+                        points += tower.points
         
+
+        # Update all the player's missiles
         for missile_obj in missile_sprite:
             missile_obj.update()
             if 0 <= missile_obj.rect.center[0] >= SCREEN_WIDTH or 0 >= missile_obj.rect.center[1] >= SCREEN_HEIGHT:
                 missile_obj.kill()
+        
+        
+        # Update all the enemies' missiles
+        for missile_obj in enemy_missile_sprite:
+            missile_obj.update()
+
+            if 0 <= missile_obj.rect.center[0] >= SCREEN_WIDTH or 0 >= missile_obj.rect.center[1] >= SCREEN_HEIGHT:
+                missile_obj.kill()
+
+            # If the missile hit the player
+            elif player.rect.collidepoint(missile_obj.rect.center) and not game_end:
+                player.life -= 1
+                damage_sound.play()
+                missile_obj.kill()
+
+                if player.life <= 0:  # If the player's life has ended - GAME OVER
+                    explosion_sprite.add(Explosion(player.rect.center, 'explosion', (150, 150)))
+                    explosion_sound.play()
+                    player_death_sound.play()
+                    pg.mixer.music.fadeout(2000)   # Music fadeout
+                    player.kill()
+                    update_ranking(scoreboard.score)
+                    game_end = True
+                    alpha = -700
+
 
         scoreboard.update(points)
-
         pg.display.update()
 
+
+
+# ============================  PAUSE  ============================
 
 def pause(score=None):
     """Pause the game and display a pause screen."""
@@ -487,6 +598,9 @@ def pause(score=None):
         pg.display.update()
         CLOCK.tick(60)
 
+
+
+# ============================  GAME OVER  ============================
 
 def game_over():
     """Display a 'game over' screen."""
