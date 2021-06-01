@@ -3,7 +3,7 @@ from classes import *
 
 # Main options
 pg.init()
-pg.mixer.set_num_channels(20)
+pg.mixer.set_num_channels(25)
 CLOCK = pg.time.Clock()
 MENU_FONT = pg.font.SysFont('Calibri', 80)
 
@@ -283,6 +283,7 @@ def game():
     # Sounds
     explosion_sound = load_sound('explosion_sound.mp3', SOUNDS_VOLUME)
     laser_sound = load_sound('laser_sound.mp3', SOUNDS_VOLUME)
+    fireball_sound = load_sound('fireball_sound.mp3', SOUNDS_VOLUME)
     damage_sound = load_sound('damage_sound.mp3', SOUNDS_VOLUME)
     player_death_sound = load_sound('player_death_sound.mp3', SOUNDS_VOLUME*1.5)
 
@@ -447,10 +448,10 @@ def game():
 
         # Add horses
         add_horse_counter += difficulty
-        if add_horse_counter >= 3000:
+        if add_horse_counter >= 3500 and time > 1000:
             side = random.choice(['left', 'right'])
             spawn_position = random.randint(100, SCREEN_HEIGHT - 100)
-            horse = Horse(spawn_position, side, 10, 5)
+            horse = Horse(spawn_position, side, 6, 5)
             horse_sprite.add(horse)
             explosion_sprite.add(Explosion(horse.rect.center, 'blue_explosion', (200, 200)))
             add_horse_counter = 0
@@ -543,9 +544,9 @@ def game():
             horse.update()
 
             horse_shooting_counter += 1
-            if horse_shooting_counter >= 100:
-                enemy_missile_sprite.add(Missile(horse.rect.center, player.rect.center, 6, 'orange'))
-                laser_sound.play()
+            if horse_shooting_counter >= 200:
+                enemy_missile_sprite.add(FireBall(horse.rect.center, horse.side))
+                fireball_sound.play()
                 horse_shooting_counter = 0
 
             # Check if  the player collided with the horse
@@ -583,18 +584,13 @@ def game():
         # Update all the player's missiles
         for missile in missile_sprite:
             missile.update()
-            if 0 <= missile.rect.center[0] >= SCREEN_WIDTH or 0 >= missile.rect.center[1] >= SCREEN_HEIGHT:
-                missile.kill()
-        
         
         # Update all the enemies' missiles
         for missile in enemy_missile_sprite:
             missile.update()
-            if 0 <= missile.rect.center[0] >= SCREEN_WIDTH or 0 >= missile.rect.center[1] >= SCREEN_HEIGHT:
-                missile.kill()
 
             # If the missile hit the player
-            elif player.rect.collidepoint(missile.rect.center) and not game_end:
+            if player.rect.collidepoint(missile.rect.center) and not game_end:
                 player.life -= 1
                 damage_sound.play()
                 missile.kill()

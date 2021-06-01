@@ -131,8 +131,36 @@ class Missile(pg.sprite.Sprite):
         self.rect.center = start_position
         
     def update(self):
-        """Update the position of the missile"""
+        """Update the position of the missile."""
         self.rect.move_ip((self.x_velocity, self.y_velocity))
+        if self.rect.left >= SCREEN_WIDTH or self.rect.right <= 0 or self.rect.top >= SCREEN_HEIGHT or self.rect.bottom <= 0:
+                self.kill()
+
+
+class FireBall(pg.sprite.Sprite):
+    """An animated fireball which moves only vertically."""
+    
+    def __init__(self, start_position:tuple, side:str):
+        pg.sprite.Sprite.__init__(self)
+        self.side = side
+        if side == 'left':
+            self.images = [pg.transform.scale(load_image('fireball\\' + image), (150, 150)) for image in os.listdir('files\\fireball')]
+            self.velocity = 3
+        elif side == 'right':
+            self.images = [pg.transform.flip(pg.transform.scale(load_image('fireball\\' + image), (150, 150)), True, False)
+                            for image in os.listdir('files\\fireball')]
+            self.velocity = -3
+        self.image_number = 0
+        self.image = self.images[0]
+        self.rect = self.image.get_rect()
+        self.rect.center = start_position
+    
+    def update(self):
+        self.image_number += 1
+        if self.image_number >= len(self.images):
+            self.image_number = 0
+        self.image = self.images[self.image_number]
+        self.rect.move_ip((self.velocity, 0))
 
 
 class Explosion(pg.sprite.Sprite):
@@ -150,9 +178,10 @@ class Explosion(pg.sprite.Sprite):
     def update(self):
         """Display next frame."""
         self.image_number += 1
-        self.image = self.images[self.image_number]
-        if self.image_number + 1 >= len(self.images):
+        if self.image_number >= len(self.images):
             self.kill()
+            return
+        self.image = self.images[self.image_number]
 
 
 class ScoreBoard(pg.sprite.Sprite):
