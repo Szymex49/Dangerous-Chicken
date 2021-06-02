@@ -15,7 +15,11 @@ class Player(pg.sprite.Sprite):
 
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.transform.scale(load_image('player.png'), (100, 100))
+        self.image_right = pg.transform.scale(load_image('player.png'), (100, 100))
+        self.image_left = pg.transform.flip(self.image_right, True, False)
+        self.image_left_bright = pg.transform.scale(load_image('brighten_player.png'), (100, 100))
+        self.image_right_bright = pg.transform.flip(self.image_left_bright, True, False)
+        self.image = self.image_right
         self.rect = self.image.get_rect()
         self.rect.center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
         self.x_velocity = 0
@@ -33,6 +37,18 @@ class Player(pg.sprite.Sprite):
             self.rect.top = 0
         elif self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
+        # Turn the player towards the cursor
+        if self.rect.center[0] < pg.mouse.get_pos()[0]:
+            self.image = self.image_right
+        else:
+            self.image = self.image_left
+    
+    def brighten(self):
+        """Brighten the image when hit."""
+        if self.rect.center[0] < pg.mouse.get_pos()[0]:
+            self.image = self.image_right_bright
+        else:
+            self.image = self.image_left_bright
 
 
 class Enemy(pg.sprite.Sprite):
@@ -40,7 +56,11 @@ class Enemy(pg.sprite.Sprite):
 
     def __init__(self, starting_position:tuple, velocity:int, life:int, points:int):
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.transform.scale(load_image('rooster.png'), (100, 100))
+        self.image_right = pg.transform.scale(load_image('rooster.png'), (100, 100))
+        self.image_left = pg.transform.flip(self.image_right, True, False)
+        self.image_right_bright = pg.transform.scale(load_image('brighten_rooster.png'), (100, 100))
+        self.image_left_bright = pg.transform.flip(self.image_right_bright, True, False)
+        self.image = self.image_right
         self.rect = self.image.get_rect()
         self.rect.center = starting_position
         self.x_velocity = 0
@@ -60,6 +80,19 @@ class Enemy(pg.sprite.Sprite):
         except ZeroDivisionError:
             pass
         self.rect.move_ip((self.x_velocity, self.y_velocity))
+        # Turn the enemy towards the player
+        if self.rect.center[0] < player_coords[0]:
+            self.image = self.image_right
+        else:
+            self.image = self.image_left
+    
+    def brighten(self, player_position:tuple):
+        """Brighten the image when hit."""
+        if self.rect.center[0] < player_position[0]:
+            self.image = self.image_right_bright
+        else:
+            self.image = self.image_left_bright
+
 
 
 class ShootingTower(pg.sprite.Sprite):
@@ -67,11 +100,29 @@ class ShootingTower(pg.sprite.Sprite):
 
     def __init__(self, position:tuple, life:int, points:int):
         pg.sprite.Sprite.__init__(self)
-        self.image = pg.transform.scale(load_image('cow.png'), (120, 120))
+        self.image_left = pg.transform.scale(load_image('cow.png'), (120, 120))
+        self.image_right = pg.transform.flip(self.image_left, True, False)
+        self.image_left_bright = pg.transform.scale(load_image('brighten_cow.png'), (120, 120))
+        self.image_right_bright = pg.transform.flip(self.image_left_bright, True, False)
+        self.image = self.image_left
         self.rect = self.image.get_rect()
         self.rect.center = position
         self.life = life
         self.points = points
+    
+    def update(self, player_position:tuple):
+        """Update the direction of looking."""
+        if self.rect.center[0] < player_position[0]:
+            self.image = self.image_right
+        else:
+            self.image = self.image_left
+    
+    def brighten(self, player_position):
+        """Brighten the image when hit."""
+        if self.rect.center[0] < player_position[0]:
+            self.image = self.image_right_bright
+        else:
+            self.image = self.image_left_bright
 
 
 class Horse(pg.sprite.Sprite):
@@ -79,21 +130,30 @@ class Horse(pg.sprite.Sprite):
     def __init__(self, position:int, side:str, life:int, points:int):
         pg.sprite.Sprite.__init__(self)
         self.side = side
-        self.image = pg.transform.scale(load_image('horse.jpg'), (150, 150))
-        self.rect = self.image.get_rect()
+        self.image_norm = pg.transform.scale(load_image('horse.jpg'), (150, 150))
+        self.image_bright = pg.transform.scale(load_image('brighten_horse.jpg'), (150, 150))
+        self.rect = self.image_norm.get_rect()
         if side == 'left':
             self.rect.center = (100, position)
         elif side == 'right':
             self.rect.center = (SCREEN_WIDTH - 100, position)
-            self.image = pg.transform.flip(self.image, True, False)
+            self.image_norm = pg.transform.flip(self.image_norm, True, False)
+            self.image_bright = pg.transform.flip(self.image_bright, True, False)
+        self.image = self.image_norm
         self.life = life
         self.points = points
         self.velocity = 3
     
     def update(self):
+        """Update the position of the horse."""
         if self.rect.top <= 0 or self.rect.bottom >= SCREEN_HEIGHT or random.randint(1, 250) == 1:
             self.velocity = -self.velocity
         self.rect.move_ip((0, self.velocity))
+        self.image = self.image_norm
+    
+    def brighten(self):
+        """Brighten the image when hit."""
+        self.image = self.image_bright
 
 
 class Missile(pg.sprite.Sprite):
