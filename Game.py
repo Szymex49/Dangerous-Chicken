@@ -3,17 +3,13 @@ from classes import *
 
 # Main options
 pg.init()
-pg.mixer.set_num_channels(25)
+pg.mixer.set_num_channels(30)
 pg.mouse.set_visible(False)
 CLOCK = pg.time.Clock()
-MENU_FONT = pg.font.SysFont('Calibri', 80)
-
-#ARROW_CURSOR = pg.transform.scale(load_image('cursor.png'), (20, 20))
-#CROSSHAIR_CURSOR = pg.transform.scale(load_image('crosshair.png'), (20, 20))
-#CURSOR_RECT = ARROW_CURSOR.get_rect()
-#CURSOR = ARROW_CURSOR
-
 CURSOR = Cursor()
+DIFFICULTY = 'Normal'
+MENU_FONT = pg.font.SysFont('Calibri', 80)
+HIGHLIGHTED_FONT = pg.font.SysFont('Calibri', 90)
 
 running_pause = True
 running_game = True
@@ -40,6 +36,9 @@ def menu():
 
     play_music('menu_music.wav', MUSIC_VOLUME)
 
+    background = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    background.fill((0, 0, 0))
+
     while True:
         SCREEN.fill((0, 0, 0))
         mx, my = pg.mouse.get_pos()  # Mouse position
@@ -52,7 +51,7 @@ def menu():
         author_button = draw_text('Author', (SCREEN_WIDTH/2, 500), MENU_FONT, (255, 255, 255))
         quit_button = draw_text('Quit', (SCREEN_WIDTH/2, 600), MENU_FONT, (200, 0, 0))
 
-        # Make transition from menu to other screen
+        # Transition from menu to other screen
         if transition_to:
             # Darken the SCREEN
             darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -79,7 +78,7 @@ def menu():
             pg.display.update()
             continue
         
-        # If we come back from pause SCREEN or 'game over' SCREEN, make smooth transition
+        # Transition from pause or game over to menu
         if transition_from:
             darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
             darken.set_alpha(alpha)
@@ -97,23 +96,35 @@ def menu():
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 click = True
 
-        if play_button.collidepoint(mx, my) and click:
-            transition_to = True
-            pg.mixer.music.fadeout(500)   # Music fadeout
-            go_to = 'game'
-        elif rules_button.collidepoint(mx, my) and click:
-            pass
-        elif options_button.collidepoint(mx, my) and click:
-            transition_to =True
-            go_to = 'options'
-        elif ranking_button.collidepoint(mx, my) and click:
-            transition_to = True
-            go_to = 'ranking'
-        elif author_button.collidepoint(mx, my) and click:
-            pass
-        elif quit_button.collidepoint(mx, my) and click:
-            pg.quit()
-            sys.exit()
+        if play_button.collidepoint(mx, my):
+            draw_text('Play', (SCREEN_WIDTH/2, 100), HIGHLIGHTED_FONT, (0, 200, 0), True)
+            if click:
+                transition_to = True
+                pg.mixer.music.fadeout(500)   # Music fadeout
+                go_to = 'game'
+        elif rules_button.collidepoint(mx, my):
+            draw_text('Rules', (SCREEN_WIDTH/2, 200), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            if click:
+                pass
+        elif options_button.collidepoint(mx, my):
+            draw_text('Options', (SCREEN_WIDTH/2, 300), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            if click:
+                transition_to =True
+                go_to = 'options'
+        elif ranking_button.collidepoint(mx, my):
+            draw_text('Ranking', (SCREEN_WIDTH/2, 400), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            if click:
+                transition_to = True
+                go_to = 'ranking'
+        elif author_button.collidepoint(mx, my):
+            draw_text('Author', (SCREEN_WIDTH/2, 500), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            if click:
+                pass
+        elif quit_button.collidepoint(mx, my):
+            draw_text('Quit', (SCREEN_WIDTH/2, 600), HIGHLIGHTED_FONT, (200, 0, 0), True)
+            if click:
+                pg.quit()
+                sys.exit()
 
         CURSOR.update()
         pg.display.update()
@@ -126,13 +137,15 @@ def menu():
 def options():
     """Display the game options and allow the user to customize them."""
 
-    global MUSIC_VOLUME, SOUNDS_VOLUME, CURSOR
+    global MUSIC_VOLUME, SOUNDS_VOLUME, DIFFICULTY, CURSOR
     running_options = True
     transition_from = True
     transition_to = False
     alpha = 255
     music_slide = False
     sounds_slide = False
+    difficulties = ['Easy', 'Normal', 'Hard', 'Hardcore']
+    difficulty_number = difficulties.index(DIFFICULTY)
 
     background = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
     background.fill((0, 0, 0))
@@ -144,15 +157,28 @@ def options():
     slider_sprite.add(music_slider)
     slider_sprite.add(sounds_slider)
 
+    triangle_left = load_image('triangle.png', (40, 40))
+    triangle_left_rect = triangle_left.get_rect()
+    triangle_left_rect.center = (SCREEN_WIDTH/2 - 200, 600)
+    triangle_left_big = load_image('triangle.png', (45, 45))
+    triangle_left_big_rect = triangle_left_big.get_rect()
+    triangle_left_big_rect.center = (SCREEN_WIDTH/2 - 200, 600)
+
+    triangle_right = pg.transform.flip(triangle_left, True, False)
+    triangle_right_rect = triangle_right.get_rect()
+    triangle_right_rect.center = (SCREEN_WIDTH/2 + 200, 600)
+    triangle_right_big = pg.transform.flip(triangle_left_big, True, False)
+    triangle_right_big_rect = triangle_right_big.get_rect()
+    triangle_right_big_rect.center = (SCREEN_WIDTH/2 + 200, 600)
+
     while running_options:
         mx, my = pg.mouse.get_pos()  # Mouse position
         music_shift = 0
         sounds_shift = 0
-
         SCREEN.fill((0, 0, 0))
-        draw_text('Music volume', (SCREEN_WIDTH/2, 100), MENU_FONT, (255, 255, 255))
-        draw_text('Sounds volume', (SCREEN_WIDTH/2, 300), MENU_FONT, (255, 255, 255))
 
+
+        # EVENTS
         click = False
         for event in pg.event.get():
 
@@ -161,7 +187,8 @@ def options():
                 sys.exit()
 
             if event.type == KEYDOWN and event.key == K_ESCAPE:
-                running_options = False
+                transition_to = True
+                alpha = 0
 
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 click = True
@@ -181,12 +208,63 @@ def options():
                     music_shift = mx + dist_x - music_slider.slider_rect.center[0]
                 elif sounds_slide:
                     sounds_shift = mx + dist_x - sounds_slider.slider_rect.center[0]
+        
+
+        # BUTTONS
+        if triangle_left_rect.collidepoint((mx, my)):
+            SCREEN.blit(triangle_left_big, triangle_left_big_rect)
+            if click:
+                difficulty_number -= 1
+        elif triangle_right_rect.collidepoint((mx, my)):
+            SCREEN.blit(triangle_right_big, triangle_right_big_rect)
+            if click:
+                difficulty_number += 1
+
+
+        # DRAWING
+        draw_text('Music volume', (SCREEN_WIDTH/2, 100), MENU_FONT, (255, 255, 255))
+        draw_text('Sounds volume', (SCREEN_WIDTH/2, 300), MENU_FONT, (255, 255, 255))
+
+        draw_text('Difficulty level', (SCREEN_WIDTH/2, 500), MENU_FONT, (255, 255, 255))
+        draw_text(DIFFICULTY, (SCREEN_WIDTH/2, 600), MENU_FONT, (255, 255, 255), True)
+
+        SCREEN.blit(triangle_left, triangle_left_rect)
+        SCREEN.blit(triangle_right, triangle_right_rect)
 
         slider_sprite.clear(SCREEN, background)
         slider_sprite.draw(SCREEN)
 
         music_slider.update(music_shift)
         sounds_slider.update(sounds_shift)
+
+
+        # Transition from menu to options
+        if transition_from:
+            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            darken.set_alpha(alpha)
+            darken.fill((0, 0, 0))
+            SCREEN.blit(darken, (0, 0))
+            alpha -= 10
+            if alpha <= 0:
+                transition_from = False
+        
+        # Transition from options to menu
+        if transition_to:
+            # Darken the screen
+            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            darken.set_alpha(alpha)
+            darken.fill((0, 0, 0))
+            SCREEN.blit(darken, (0, 0))
+            alpha += 10
+            if alpha >= 255:
+                running_options = False
+
+
+        if difficulty_number > 3:
+            difficulty_number = 0
+        elif difficulty_number < 0:
+            difficulty_number = 3
+        DIFFICULTY = difficulties[difficulty_number]
 
         MUSIC_VOLUME = music_slider.volume
         SOUNDS_VOLUME = sounds_slider.volume
@@ -222,11 +300,11 @@ def ranking():
         # Draw the best scores and their dates
         position = 600
         for score, date in zip(RANKING[0], RANKING[1]):
-            draw_text(str(score), (150, position), MENU_FONT, (255, 255, 255))
-            draw_text(str(date), (500, position), MENU_FONT, (255, 255, 255))
+            draw_text(str(score), (SCREEN_WIDTH/2 - 300, position), MENU_FONT, (255, 255, 255))
+            draw_text(str(date), (SCREEN_WIDTH/2 + 400, position), MENU_FONT, (255, 255, 255))
             position -= 100
 
-        # Make transition from ranking to menu
+        # Transition from ranking to menu
         if transition_to:
             # Darken the screen
             darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -236,12 +314,12 @@ def ranking():
             alpha += 10
             if alpha >= 255:
                 running_ranking = False
-            CLOCK.tick(60)
             CURSOR.update()
             pg.display.update()
+            CLOCK.tick(60)
             continue
 
-        # Make transition from menu to ranking
+        # Transition from menu to ranking
         if transition_from:
             darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
             darken.set_alpha(alpha)
@@ -285,7 +363,7 @@ def game():
     time = 0
 
     # Background
-    background = load_image('background.jpg', False)
+    background = load_image('background.jpg', (SCREEN_WIDTH, SCREEN_HEIGHT), False)
 
     # Music
     play_music('game_music.wav', MUSIC_VOLUME)
@@ -301,13 +379,15 @@ def game():
     player_sprite = pg.sprite.Group()
     player = Player()
     player_sprite.add(player)
+    player_shooting = False
+    player_shooting_counter = 10
 
     # Enemies
     enemy_sprite = pg.sprite.Group()
     add_enemy_counter = 0
     tower_sprite = pg.sprite.Group()
     add_tower_counter = 0
-    shooting_counter = 0
+    tower_shooting_counter = 0
     horse_sprite = pg.sprite.Group()
     add_horse_counter = 0
     horse_shooting_counter = 0
@@ -329,7 +409,16 @@ def game():
         SCREEN.blit(background, (0, 0))
         points = 0
         time += 1
-        difficulty = time**(1.0/6.0)
+
+        # Set difficulty level
+        if DIFFICULTY == 'Easy':
+            difficulty = time**(1.0/8.0)
+        elif DIFFICULTY == 'Normal':
+            difficulty = time**(1.0/6.0)
+        elif DIFFICULTY == 'Hard':
+            difficulty = time**(1.0/4.0)
+        elif DIFFICULTY == 'Hardcore':
+            difficulty = time**(1.0/2.0)
 
         # Clear the SCREEN
         horse_sprite.clear(SCREEN, background)
@@ -375,9 +464,9 @@ def game():
             SCREEN.blit(darken, (0, 0))
             alpha += 10
             if alpha >= 255:
-                game_over()
+                game_over(scoreboard.score)
 
-        # If the game has just started, display transition
+        # Transition from menu to game
         if transition_from:
             darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
             darken.set_alpha(alpha)
@@ -420,10 +509,10 @@ def game():
                     player.y_velocity = 0
             
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
-                aim = pg.mouse.get_pos()
-                missile_sprite.add(Missile(player.rect.center, aim, 8, 'blue'))
-                laser_sound.play()
-
+                player_shooting = True
+                player_shooting_counter = 10
+            elif event.type == MOUSEBUTTONUP and event.button == 1:
+                player_shooting = False
 
         # Add enemies
         add_enemy_counter += difficulty
@@ -468,8 +557,20 @@ def game():
             add_horse_counter = 0
 
 
-        # Update all the objects
+        # --- Update all the objects --- 
+
+        # PLAYER
         player.update()
+
+        # If player is shooting
+        if player_shooting:
+            player_shooting_counter += 1
+            if player_shooting_counter >= 10:
+                aim = pg.mouse.get_pos()
+                missile_sprite.add(Missile(player.rect.center, aim, 12, 'blue'))
+                laser_sound.play()
+                player_shooting_counter = 0
+
 
         # ENEMIES
         for enemy in enemy_sprite:
@@ -512,11 +613,11 @@ def game():
         for tower in tower_sprite:
             tower.update(player.rect.center)
 
-            shooting_counter += 1
-            if shooting_counter >= 61:
+            tower_shooting_counter += 1
+            if tower_shooting_counter >= 61:
                 enemy_missile_sprite.add(Missile(tower.rect.center, player.rect.center, 6, 'red'))
                 laser_sound.play()
-                shooting_counter = 0
+                tower_shooting_counter = 0
 
             # Check if  the player collided with the tower
             if player.rect.collidepoint(tower.rect.center) and not game_end:
@@ -637,7 +738,7 @@ def pause(score=None):
     transition_to = False
     alpha = 0   # Transparence
     go_to = ''
-    background = load_image('background.jpg', False)
+    background = load_image('background.jpg', (SCREEN_WIDTH, SCREEN_HEIGHT), False)
     running_pause = True
 
     while running_pause:
@@ -645,9 +746,9 @@ def pause(score=None):
         SCREEN.set_alpha(100)
         mx, my = pg.mouse.get_pos()  # Mouse position
 
-        resume_button = draw_text('Resume', (SCREEN_WIDTH/2, 100), MENU_FONT, (0, 200, 0))
-        restart_button = draw_text('Restart', (SCREEN_WIDTH/2, 200), MENU_FONT, (0, 0, 200))
-        menu_button = draw_text('Return to menu', (SCREEN_WIDTH/2, 300), MENU_FONT, (200, 0, 0))
+        resume_button = draw_text('Resume', (SCREEN_WIDTH/2, 300), MENU_FONT, (255, 255, 255))
+        restart_button = draw_text('Restart', (SCREEN_WIDTH/2, 400), MENU_FONT, (255, 255, 255))
+        menu_button = draw_text('Return to menu', (SCREEN_WIDTH/2, 500), MENU_FONT, (255, 255, 255))
 
         # Transition to other screen
         if transition_to:
@@ -679,19 +780,25 @@ def pause(score=None):
                 running_pause = False
                 SCREEN.blit(background, (0, 0))   # Restore the background
 
-        if resume_button.collidepoint(mx, my) and click:
-            running_pause = False
-            SCREEN.blit(background, (0, 0))   # Restore the background
-        if restart_button.collidepoint(mx, my) and click:
-            update_ranking(score)
-            transition_to = True
-            alpha = 0
-        if menu_button.collidepoint(mx, my) and click:
-            update_ranking(score)
-            pg.mixer.music.fadeout(1000)   # Music fadeout
-            transition_to = True
-            alpha = 0
-            go_to = 'menu'
+        if resume_button.collidepoint(mx, my):
+            draw_text('Resume', (SCREEN_WIDTH/2, 300), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            if click:
+                running_pause = False
+                SCREEN.blit(background, (0, 0))   # Restore the background
+        if restart_button.collidepoint(mx, my):
+            draw_text('Restart', (SCREEN_WIDTH/2, 400), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            if click:
+                update_ranking(score)
+                transition_to = True
+                alpha = 0
+        if menu_button.collidepoint(mx, my):
+            draw_text('Return to menu', (SCREEN_WIDTH/2, 500), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            if click:
+                update_ranking(score)
+                pg.mixer.music.fadeout(1000)
+                transition_to = True
+                alpha = 0
+                go_to = 'menu'
 
         CURSOR.update()
         pg.display.update()
@@ -701,7 +808,7 @@ def pause(score=None):
 
 # ============================  GAME OVER  ============================
 
-def game_over():
+def game_over(score):
     """Display a 'game over' screen."""
 
     global running_game, running_game_over, restart, CURSOR
@@ -720,9 +827,9 @@ def game_over():
         mx, my = pg.mouse.get_pos()  # Mouse position
 
         draw_text('GAME OVER', (SCREEN_WIDTH/2, 100), MENU_FONT, (200, 0, 0))
-
-        restart_button = draw_text('Restart', (SCREEN_WIDTH/2, 400), MENU_FONT, (255, 255, 255))
-        menu_button = draw_text('Return to menu', (SCREEN_WIDTH/2, 500), MENU_FONT, (255, 255, 255))
+        draw_text('Your score: ' + str(score), (SCREEN_WIDTH/2, 300), MENU_FONT, (255, 255, 255))
+        restart_button = draw_text('Restart', (SCREEN_WIDTH/2, 500), MENU_FONT, (255, 255, 255))
+        menu_button = draw_text('Return to menu', (SCREEN_WIDTH/2, 600), MENU_FONT, (255, 255, 255))
 
         # Transition to other screen
         if transition_to:
@@ -742,7 +849,7 @@ def game_over():
             pg.display.update()
             continue
         
-        # If the game has just ended, make transition to 'game over' screen
+        # Transition from game to game over
         if transition_from:
             darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
             darken.set_alpha(alpha)
@@ -760,20 +867,24 @@ def game_over():
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 click = True
 
-        if restart_button.collidepoint(mx, my) and click:
-            transition_to = True
-            alpha = 0
-        if menu_button.collidepoint(mx, my) and click:
-            transition_to = True
-            alpha = 0
-            go_to = 'menu'
+        if restart_button.collidepoint(mx, my):
+            draw_text('Restart', (SCREEN_WIDTH/2, 500), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            if click:
+                transition_to = True
+                alpha = 0
+        if menu_button.collidepoint(mx, my):
+            draw_text('Return to menu', (SCREEN_WIDTH/2, 600), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            if click:
+                transition_to = True
+                alpha = 0
+                go_to = 'menu'
 
         CURSOR.update()
         pg.display.update()
         CLOCK.tick(60)
 
 
-icon = load_image('icon.png')
+icon = load_image('icon.png', (100, 100))
 pg.display.set_icon(icon)
 pg.display.set_caption('Dangerous Chicken')
 menu()

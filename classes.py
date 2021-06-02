@@ -15,9 +15,9 @@ class Player(pg.sprite.Sprite):
 
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
-        self.image_right = pg.transform.scale(load_image('player.png'), (100, 100))
+        self.image_right = load_image('player.png', (100, 100))
         self.image_left = pg.transform.flip(self.image_right, True, False)
-        self.image_left_bright = pg.transform.scale(load_image('brighten_player.png'), (100, 100))
+        self.image_left_bright = load_image('brighten_player.png', (100, 100))
         self.image_right_bright = pg.transform.flip(self.image_left_bright, True, False)
         self.image = self.image_right
         self.rect = self.image.get_rect()
@@ -56,9 +56,9 @@ class Enemy(pg.sprite.Sprite):
 
     def __init__(self, starting_position:tuple, velocity:int, life:int, points:int):
         pg.sprite.Sprite.__init__(self)
-        self.image_right = pg.transform.scale(load_image('rooster.png'), (100, 100))
+        self.image_right = load_image('rooster.png', (100, 100))
         self.image_left = pg.transform.flip(self.image_right, True, False)
-        self.image_right_bright = pg.transform.scale(load_image('brighten_rooster.png'), (100, 100))
+        self.image_right_bright = load_image('brighten_rooster.png', (100, 100))
         self.image_left_bright = pg.transform.flip(self.image_right_bright, True, False)
         self.image = self.image_right
         self.rect = self.image.get_rect()
@@ -100,9 +100,9 @@ class ShootingTower(pg.sprite.Sprite):
 
     def __init__(self, position:tuple, life:int, points:int):
         pg.sprite.Sprite.__init__(self)
-        self.image_left = pg.transform.scale(load_image('cow.png'), (120, 120))
+        self.image_left = load_image('cow.png', (120, 120))
         self.image_right = pg.transform.flip(self.image_left, True, False)
-        self.image_left_bright = pg.transform.scale(load_image('brighten_cow.png'), (120, 120))
+        self.image_left_bright = load_image('brighten_cow.png', (120, 120))
         self.image_right_bright = pg.transform.flip(self.image_left_bright, True, False)
         self.image = self.image_left
         self.rect = self.image.get_rect()
@@ -130,8 +130,8 @@ class Horse(pg.sprite.Sprite):
     def __init__(self, position:int, side:str, life:int, points:int):
         pg.sprite.Sprite.__init__(self)
         self.side = side
-        self.image_norm = pg.transform.scale(load_image('horse.jpg'), (150, 150))
-        self.image_bright = pg.transform.scale(load_image('brighten_horse.jpg'), (150, 150))
+        self.image_norm = load_image('horse.jpg', (150, 150))
+        self.image_bright = load_image('brighten_horse.jpg', (150, 150))
         self.rect = self.image_norm.get_rect()
         if side == 'left':
             self.rect.center = (100, position)
@@ -186,7 +186,7 @@ class Missile(pg.sprite.Sprite):
         elif kind == 'harnold':
             filename = 'harnold.jpg'
         
-        self.image = pg.transform.rotate(pg.transform.scale(load_image(filename), (35, 12)), angle)
+        self.image = pg.transform.rotate(load_image(filename, (35, 12)), angle)
         self.rect = self.image.get_rect()
         self.rect.center = start_position
         
@@ -204,10 +204,10 @@ class FireBall(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
         self.side = side
         if side == 'left':
-            self.images = [pg.transform.scale(load_image('fireball\\' + image), (150, 150)) for image in os.listdir('files\\fireball')]
+            self.images = [load_image('fireball\\' + image, (150, 150)) for image in os.listdir('files\\fireball')]
             self.velocity = 3
         elif side == 'right':
-            self.images = [pg.transform.flip(pg.transform.scale(load_image('fireball\\' + image), (150, 150)), True, False)
+            self.images = [pg.transform.flip(load_image('fireball\\' + image, (150, 150)), True, False)
                             for image in os.listdir('files\\fireball')]
             self.velocity = -3
         self.image_number = 0
@@ -229,7 +229,7 @@ class Explosion(pg.sprite.Sprite):
     def __init__(self, position:tuple, kind:str, size:tuple):
         pg.sprite.Sprite.__init__(self)
         self.position = position
-        self.images = [pg.transform.scale(load_image(kind + '\\' + image), size) for image in os.listdir('files\\' + kind)]
+        self.images = [load_image(kind + '\\' + image, size) for image in os.listdir('files\\' + kind)]
         self.image_number = 0
         self.image = self.images[0]
         self.rect = self.image.get_rect()
@@ -272,12 +272,12 @@ class Slider(pg.sprite.Sprite):
         self.delta = 45  # Distance from both sides where the axis ends
 
         # Axis
-        self.image = pg.transform.scale(load_image('axis.png'), (500, 80))
+        self.image = load_image('axis.png', (500, 80))
         self.rect = self.image.get_rect()
         self.rect.center = position
 
         # Slider
-        self.slider_im = pg.transform.scale(load_image('slider.png'), (16, 40))
+        self.slider_im = load_image('slider.png', (16, 40))
         self.slider_rect = self.slider_im.get_rect()
         self.length = self.rect.right - self.rect.left - 2 * self.delta - self.slider_rect.width   # Length of the axis
         self.slider_rect.center = (self.volume * self.length + self.rect.left + self.delta + self.slider_rect.width/2, position[1])
@@ -300,8 +300,8 @@ class Slider(pg.sprite.Sprite):
 class Cursor(pg.sprite.Sprite):
 
     def __init__(self):
-        self.arrow = pg.transform.scale(load_image('cursor.png'), (20, 20))
-        self.crosshair = pg.transform.scale(load_image('crosshair.png'), (20, 20))
+        self.arrow = load_image('cursor.png', (20, 20))
+        self.crosshair = load_image('crosshair.png', (20, 20))
         self.image = self.arrow
         self.rect = self.image.get_rect()
         self.rect.topleft = pg.mouse.get_pos()

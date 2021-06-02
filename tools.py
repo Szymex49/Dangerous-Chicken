@@ -14,7 +14,7 @@ SCREEN = pg.display.set_mode(flags=FULLSCREEN)
 SCREEN_WIDTH = pg.display.get_window_size()[0]
 SCREEN_HEIGHT = pg.display.get_window_size()[1]
 
-MUSIC_VOLUME = 0.2
+MUSIC_VOLUME = 0.0
 SOUNDS_VOLUME = 0.2
 
 ranking_file = open('files\\ranking', 'rb')
@@ -22,12 +22,14 @@ RANKING = pickle.load(ranking_file)
 ranking_file.close()
 
 
-def load_image(filename:str, erase_bg=True):
+def load_image(filename:str, size:tuple, erase_bg=True):
     image = pg.image.load('files\\' + filename).convert()
 
     if erase_bg is True:   # Make the background of the image transparrent
         colorkey = image.get_at((0,0))
         image.set_colorkey(colorkey, RLEACCEL)
+    
+    image = pg.transform.scale(image, size)
     return image
 
 
@@ -44,19 +46,26 @@ def play_music(filename:str, volume=MUSIC_VOLUME):
     pg.mixer.music.play(-1)
 
 
-def draw_text(text:str, position:tuple, font:object, rgb_color:tuple):
+def draw_text(text:str, position:tuple, font:object, rgb_color:tuple, background=False):
     """Draw the text on the screen and return the rectangle in the position of the text."""
     text_obj = font.render(text, 1, rgb_color)
     text_rect = text_obj.get_rect()
     text_rect.center = position
+
+    # Draw background behind the text
+    if background:
+        bg = pg.Surface(text_rect.size)
+        bg.fill((0, 0, 0))
+        SCREEN.blit(bg, text_rect)
+    
     SCREEN.blit(text_obj, text_rect)
     return text_rect
 
 
 def draw_lifes(lifes):
     """Draw lifes of the player on the screen."""
-    full_heart = pg.transform.scale(load_image('heart.png'), (80, 80))
-    empty_heart = pg.transform.scale(load_image('heart.png'), (80, 80))
+    full_heart = load_image('heart.png', (80, 80))
+    empty_heart = load_image('heart.png', (80, 80))
     empty_heart.set_alpha(90)
     heart_rect1 = full_heart.get_rect()
     heart_rect2 = full_heart.get_rect()
