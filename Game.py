@@ -1,3 +1,4 @@
+from pygame.image import load
 from classes import *
 
 
@@ -10,6 +11,13 @@ CURSOR = Cursor()
 DIFFICULTY = 'Normal'
 MENU_FONT = pg.font.SysFont('Calibri', 80)
 HIGHLIGHTED_FONT = pg.font.SysFont('Calibri', 90)
+
+ARROW_IMAGE = load_image('arrow.png', (30, 30))
+ARROW_RECT = ARROW_IMAGE.get_rect()
+ARROW_RECT.center = (50, 50)
+ARROW_BIG_IMAGE = load_image('arrow.png', (40, 40))
+ARROW_BIG_RECT = ARROW_BIG_IMAGE.get_rect()
+ARROW_BIG_RECT.center = (50, 50)
 
 running_pause = True
 running_game = True
@@ -44,12 +52,12 @@ def menu():
         mx, my = pg.mouse.get_pos()  # Mouse position
 
         # Draw buttons
-        play_button = draw_text('Play', (SCREEN_WIDTH/2, 100), MENU_FONT, (0, 200, 0))
-        rules_button = draw_text('Rules', (SCREEN_WIDTH/2, 200), MENU_FONT, (255, 255, 255))
-        options_button = draw_text('Options', (SCREEN_WIDTH/2, 300), MENU_FONT, (255, 255, 255))
-        ranking_button = draw_text('Ranking', (SCREEN_WIDTH/2, 400), MENU_FONT, (255, 255, 255))
-        author_button = draw_text('Author', (SCREEN_WIDTH/2, 500), MENU_FONT, (255, 255, 255))
-        quit_button = draw_text('Quit', (SCREEN_WIDTH/2, 600), MENU_FONT, (200, 0, 0))
+        play_button = draw_text('Play', (SCREEN_WIDTH/2, 200), MENU_FONT, (0, 200, 0))
+        rules_button = draw_text('Rules', (SCREEN_WIDTH/2, 300), MENU_FONT, (255, 255, 255))
+        options_button = draw_text('Options', (SCREEN_WIDTH/2, 400), MENU_FONT, (255, 255, 255))
+        ranking_button = draw_text('Ranking', (SCREEN_WIDTH/2, 500), MENU_FONT, (255, 255, 255))
+        author_button = draw_text('Author', (SCREEN_WIDTH/2, 600), MENU_FONT, (255, 255, 255))
+        quit_button = draw_text('Quit', (SCREEN_WIDTH/2, 700), MENU_FONT, (200, 0, 0))
 
         # Transition from menu to other screen
         if transition_to:
@@ -66,10 +74,14 @@ def menu():
                         game()
                     play_music('menu_music.wav', MUSIC_VOLUME)
                     CURSOR.image = CURSOR.arrow
+                elif go_to == 'rules':
+                    rules()
                 elif go_to == 'options':
                     options()
                 elif go_to == 'ranking':
                     ranking()
+                elif go_to == 'author':
+                    author()
                 transition_from = True
                 transition_to = False
                 alpha = 255
@@ -97,31 +109,33 @@ def menu():
                 click = True
 
         if play_button.collidepoint(mx, my):
-            draw_text('Play', (SCREEN_WIDTH/2, 100), HIGHLIGHTED_FONT, (0, 200, 0), True)
+            draw_text('Play', (SCREEN_WIDTH/2, 200), HIGHLIGHTED_FONT, (0, 200, 0), True)
             if click:
                 transition_to = True
                 pg.mixer.music.fadeout(500)   # Music fadeout
                 go_to = 'game'
         elif rules_button.collidepoint(mx, my):
-            draw_text('Rules', (SCREEN_WIDTH/2, 200), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            draw_text('Rules', (SCREEN_WIDTH/2, 300), HIGHLIGHTED_FONT, (255, 255, 255), True)
             if click:
-                pass
+                transition_to = True
+                go_to = 'rules'
         elif options_button.collidepoint(mx, my):
-            draw_text('Options', (SCREEN_WIDTH/2, 300), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            draw_text('Options', (SCREEN_WIDTH/2, 400), HIGHLIGHTED_FONT, (255, 255, 255), True)
             if click:
                 transition_to =True
                 go_to = 'options'
         elif ranking_button.collidepoint(mx, my):
-            draw_text('Ranking', (SCREEN_WIDTH/2, 400), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            draw_text('Ranking', (SCREEN_WIDTH/2, 500), HIGHLIGHTED_FONT, (255, 255, 255), True)
             if click:
                 transition_to = True
                 go_to = 'ranking'
         elif author_button.collidepoint(mx, my):
-            draw_text('Author', (SCREEN_WIDTH/2, 500), HIGHLIGHTED_FONT, (255, 255, 255), True)
+            draw_text('Author', (SCREEN_WIDTH/2, 600), HIGHLIGHTED_FONT, (255, 255, 255), True)
             if click:
-                pass
+                transition_to = True
+                go_to = 'author'
         elif quit_button.collidepoint(mx, my):
-            draw_text('Quit', (SCREEN_WIDTH/2, 600), HIGHLIGHTED_FONT, (200, 0, 0), True)
+            draw_text('Quit', (SCREEN_WIDTH/2, 700), HIGHLIGHTED_FONT, (200, 0, 0), True)
             if click:
                 pg.quit()
                 sys.exit()
@@ -129,6 +143,94 @@ def menu():
         CURSOR.update()
         pg.display.update()
         CLOCK.tick(80)
+
+
+
+# ============================  RULES  ============================
+
+def rules():
+    """Display the screen with game rules."""
+
+    global CURSOR
+    running_rules = True
+    transition_from = True
+    transition_to = False
+    alpha = 255
+
+    rules_text = ["1. You are a chicken.",
+                "2. You can shoot laser.",
+                "3. Other animals don't like you and want to kill you.",
+                "4. Kill them."]
+    rules_font = pg.font.SysFont('Calibri', 40)
+
+    wsad_image = load_image('controls1.jpg', (250, 250))
+    wsad_rect = wsad_image.get_rect()
+    wsad_rect.center = (SCREEN_WIDTH/2 + 400, 320)
+
+    mouse_image = load_image('controls2.png', (200, 200))
+    mouse_rect = mouse_image.get_rect()
+    mouse_rect.center = (SCREEN_WIDTH/2 + 400, 650)
+
+    while running_rules:
+        SCREEN.fill((0, 0, 0))
+        SCREEN.blit(ARROW_IMAGE, ARROW_RECT)
+
+        draw_text('RULES', (SCREEN_WIDTH/2 - 400, 100), MENU_FONT, (0, 0, 240))
+        position = 200
+        for rule in rules_text:
+            draw_text(rule, (SCREEN_WIDTH/2 - 700, position), rules_font, (255, 255, 255), point='topleft')
+            position += 100
+
+        draw_text('CONTROLS', (SCREEN_WIDTH/2 + 400, 100), MENU_FONT, (0, 0, 240))
+        draw_text('Moving', (SCREEN_WIDTH/2 + 400, 200), rules_font, (255, 255, 255))
+        SCREEN.blit(wsad_image, wsad_rect)
+        draw_text('Shooting', (SCREEN_WIDTH/2 + 400, 500), rules_font, (255, 255, 255))
+        SCREEN.blit(mouse_image, mouse_rect)
+
+        # Transition from rules to menu
+        if transition_to:
+            # Darken the screen
+            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            darken.set_alpha(alpha)
+            darken.fill((0, 0, 0))
+            SCREEN.blit(darken, (0, 0))
+            alpha += 10
+            if alpha >= 255:
+                running_rules = False
+            CURSOR.update()
+            pg.display.update()
+            CLOCK.tick(60)
+            continue
+
+        # Transition from menu to rules
+        if transition_from:
+            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            darken.set_alpha(alpha)
+            darken.fill((0, 0, 0))
+            SCREEN.blit(darken, (0, 0))
+            alpha -= 10
+            if alpha <= 0:
+                transition_from = False
+        
+        click = False
+        for event in pg.event.get():
+            if event.type == QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type == KEYDOWN and event.key == K_ESCAPE:
+                transition_to = True
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                click = True
+        
+        if ARROW_RECT.collidepoint(pg.mouse.get_pos()):
+            SCREEN.blit(ARROW_BIG_IMAGE, ARROW_BIG_RECT)
+            if click:
+                transition_to = True
+
+        
+        CURSOR.update()
+        pg.display.update()
+        CLOCK.tick(60)
 
 
 
@@ -146,12 +248,13 @@ def options():
     sounds_slide = False
     difficulties = ['Easy', 'Normal', 'Hard', 'Hardcore']
     difficulty_number = difficulties.index(DIFFICULTY)
+    text_font = pg.font.SysFont('Calibri', 50)
 
     background = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
     background.fill((0, 0, 0))
 
-    music_slider = Slider((SCREEN_WIDTH/2, 200), MUSIC_VOLUME)
-    sounds_slider = Slider((SCREEN_WIDTH/2, 400), SOUNDS_VOLUME)
+    music_slider = Slider((SCREEN_WIDTH/2, 300), MUSIC_VOLUME)
+    sounds_slider = Slider((SCREEN_WIDTH/2, 500), SOUNDS_VOLUME)
 
     slider_sprite = pg.sprite.Group()
     slider_sprite.add(music_slider)
@@ -159,23 +262,24 @@ def options():
 
     triangle_left = load_image('triangle.png', (40, 40))
     triangle_left_rect = triangle_left.get_rect()
-    triangle_left_rect.center = (SCREEN_WIDTH/2 - 200, 600)
+    triangle_left_rect.center = (SCREEN_WIDTH/2 - 200, 700)
     triangle_left_big = load_image('triangle.png', (45, 45))
     triangle_left_big_rect = triangle_left_big.get_rect()
-    triangle_left_big_rect.center = (SCREEN_WIDTH/2 - 200, 600)
+    triangle_left_big_rect.center = (SCREEN_WIDTH/2 - 200, 700)
 
     triangle_right = pg.transform.flip(triangle_left, True, False)
     triangle_right_rect = triangle_right.get_rect()
-    triangle_right_rect.center = (SCREEN_WIDTH/2 + 200, 600)
+    triangle_right_rect.center = (SCREEN_WIDTH/2 + 200, 700)
     triangle_right_big = pg.transform.flip(triangle_left_big, True, False)
     triangle_right_big_rect = triangle_right_big.get_rect()
-    triangle_right_big_rect.center = (SCREEN_WIDTH/2 + 200, 600)
+    triangle_right_big_rect.center = (SCREEN_WIDTH/2 + 200, 700)
 
     while running_options:
         mx, my = pg.mouse.get_pos()  # Mouse position
         music_shift = 0
         sounds_shift = 0
         SCREEN.fill((0, 0, 0))
+        SCREEN.blit(ARROW_IMAGE, ARROW_RECT)
 
 
         # EVENTS
@@ -219,14 +323,20 @@ def options():
             SCREEN.blit(triangle_right_big, triangle_right_big_rect)
             if click:
                 difficulty_number += 1
+        elif ARROW_RECT.collidepoint(pg.mouse.get_pos()):
+            SCREEN.blit(ARROW_BIG_IMAGE, ARROW_BIG_RECT)
+            if click:
+                transition_to = True
 
 
         # DRAWING
-        draw_text('Music volume', (SCREEN_WIDTH/2, 100), MENU_FONT, (255, 255, 255))
-        draw_text('Sounds volume', (SCREEN_WIDTH/2, 300), MENU_FONT, (255, 255, 255))
+        draw_text('OPTIONS', (SCREEN_WIDTH/2, 100), MENU_FONT, (0, 0, 240))
 
-        draw_text('Difficulty level', (SCREEN_WIDTH/2, 500), MENU_FONT, (255, 255, 255))
-        draw_text(DIFFICULTY, (SCREEN_WIDTH/2, 600), MENU_FONT, (255, 255, 255), True)
+        draw_text('Music volume', (SCREEN_WIDTH/2, 220), text_font, (255, 255, 255))
+        draw_text('Sounds volume', (SCREEN_WIDTH/2, 420), text_font, (255, 255, 255))
+
+        draw_text('Difficulty level', (SCREEN_WIDTH/2, 620), text_font, (255, 255, 255))
+        draw_text(DIFFICULTY, (SCREEN_WIDTH/2, 700), text_font, (255, 255, 255), True)
 
         SCREEN.blit(triangle_left, triangle_left_rect)
         SCREEN.blit(triangle_right, triangle_right_rect)
@@ -292,17 +402,43 @@ def ranking():
     RANKING = pickle.load(ranking_file)
     ranking_file.close()
 
+    heading_font = pg.font.SysFont('Calibri', 55)
+    text_font = pg.font.SysFont('Calibri', 35)
+
     while running_ranking:
 
         SCREEN.fill((0, 0, 0))
-        draw_text('RANKING', (SCREEN_WIDTH/2, 100), MENU_FONT, (0, 0, 200))
+        SCREEN.blit(ARROW_IMAGE, ARROW_RECT)
+        draw_text('BEST SCORES', (SCREEN_WIDTH/2, 100), MENU_FONT, (0, 0, 240))
 
         # Draw the best scores and their dates
-        position = 600
-        for score, date in zip(RANKING[0], RANKING[1]):
-            draw_text(str(score), (SCREEN_WIDTH/2 - 300, position), MENU_FONT, (255, 255, 255))
-            draw_text(str(date), (SCREEN_WIDTH/2 + 400, position), MENU_FONT, (255, 255, 255))
-            position -= 100
+        draw_text('Easy', (SCREEN_WIDTH/4, 180), heading_font, (255, 255, 255))
+        position = 450
+        for score, date in zip(RANKING[0][0], RANKING[1][1]):
+            draw_text(str(score), (SCREEN_WIDTH/4 - 100, position), text_font, (255, 255, 255))
+            draw_text(str(date), (SCREEN_WIDTH/4 + 50, position), text_font, (255, 255, 255))
+            position -= 50
+        
+        draw_text('Normal', (SCREEN_WIDTH/4, 530), heading_font, (255, 255, 255))
+        position = 800
+        for score, date in zip(RANKING[1][0], RANKING[1][1]):
+            draw_text(str(score), (SCREEN_WIDTH/4 - 100, position), text_font, (255, 255, 255))
+            draw_text(str(date), (SCREEN_WIDTH/4 + 50, position), text_font, (255, 255, 255))
+            position -= 50
+
+        draw_text('Hard', (3*SCREEN_WIDTH/4, 180), heading_font, (255, 255, 255))
+        position = 450
+        for score, date in zip(RANKING[2][0], RANKING[1][1]):
+            draw_text(str(score), (3*SCREEN_WIDTH/4 - 100, position), text_font, (255, 255, 255))
+            draw_text(str(date), (3*SCREEN_WIDTH/4 + 50, position), text_font, (255, 255, 255))
+            position -= 50
+
+        draw_text('Hardcore', (3*SCREEN_WIDTH/4, 530), heading_font, (255, 255, 255))
+        position = 800
+        for score, date in zip(RANKING[3][0], RANKING[1][1]):
+            draw_text(str(score), (3*SCREEN_WIDTH/4 - 100, position), text_font, (255, 255, 255))
+            draw_text(str(date), (3*SCREEN_WIDTH/4 + 50, position), text_font, (255, 255, 255))
+            position -= 50
 
         # Transition from ranking to menu
         if transition_to:
@@ -329,14 +465,103 @@ def ranking():
             if alpha <= 0:
                 transition_from = False
 
+        click = False
         for event in pg.event.get():
-
             if event.type == QUIT:
                 pg.quit()
                 sys.exit()
-
             if event.type == KEYDOWN and event.key == K_ESCAPE:
                 transition_to = True
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                click = True
+
+        if ARROW_RECT.collidepoint(pg.mouse.get_pos()):
+            SCREEN.blit(ARROW_BIG_IMAGE, ARROW_BIG_RECT)
+            if click:
+                transition_to = True
+        
+        CURSOR.update()
+        pg.display.update()
+        CLOCK.tick(60)
+
+
+
+# ============================  AUTHOR  ============================
+
+def author():
+    """Display the screen with information about me."""
+
+    global CURSOR
+    running_author = True
+    transition_from = True
+    transition_to = False
+    alpha = 255
+
+    author_image = load_image('author.jpg', (500, 500), False)
+    author_rect = author_image.get_rect()
+    author_rect.center = (320, 500)
+
+    text = ["Hi, my name is Szymon and I'm a student of",
+            "the Wrocław Uniwersity of Science and Technology",
+            "in the field of applied mathematics. I made",
+            "this game for a programming assignment. I was",
+            "always interested in video games so working on",
+            "this game was fun and great experience.",
+            "I hope you'll enjoy it."]
+    text_font = pg.font.SysFont('Calibri', 40)
+
+    while running_author:
+        SCREEN.fill((0, 0, 0))
+        SCREEN.blit(ARROW_IMAGE, ARROW_RECT)
+        draw_text('ABOUT THE AUTHOR', (SCREEN_WIDTH/2, 100), MENU_FONT, (0, 0, 240))
+
+        SCREEN.blit(author_image, author_rect)
+
+        position = 330
+        for line in text:
+            draw_text(line, (SCREEN_WIDTH/2 - 120, position), text_font, (255, 255, 255), point='topleft')
+            position += 50
+
+        # Transition from rules to menu
+        if transition_to:
+            # Darken the screen
+            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            darken.set_alpha(alpha)
+            darken.fill((0, 0, 0))
+            SCREEN.blit(darken, (0, 0))
+            alpha += 10
+            if alpha >= 255:
+                running_author = False
+            CURSOR.update()
+            pg.display.update()
+            CLOCK.tick(60)
+            continue
+
+        # Transition from menu to rules
+        if transition_from:
+            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            darken.set_alpha(alpha)
+            darken.fill((0, 0, 0))
+            SCREEN.blit(darken, (0, 0))
+            alpha -= 10
+            if alpha <= 0:
+                transition_from = False
+        
+        click = False
+        for event in pg.event.get():
+            if event.type == QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type == KEYDOWN and event.key == K_ESCAPE:
+                transition_to = True
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                click = True
+        
+        if ARROW_RECT.collidepoint(pg.mouse.get_pos()):
+            SCREEN.blit(ARROW_BIG_IMAGE, ARROW_BIG_RECT)
+            if click:
+                transition_to = True
+
         
         CURSOR.update()
         pg.display.update()
@@ -413,12 +638,16 @@ def game():
         # Set difficulty level
         if DIFFICULTY == 'Easy':
             difficulty = time**(1.0/8.0)
+            level = 0
         elif DIFFICULTY == 'Normal':
             difficulty = time**(1.0/6.0)
+            level = 1
         elif DIFFICULTY == 'Hard':
-            difficulty = time**(1.0/4.0)
+            difficulty = time**(1.0/5.0)
+            level = 2
         elif DIFFICULTY == 'Hardcore':
-            difficulty = time**(1.0/2.0)
+            difficulty = time**(1.0/3.0)
+            level = 3
 
         # Clear the SCREEN
         horse_sprite.clear(SCREEN, background)
@@ -485,7 +714,7 @@ def game():
 
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    pause(scoreboard.score)
+                    pause(level, scoreboard.score)
                     CURSOR.image = CURSOR.crosshair
 
                 # WSAD - moving the character
@@ -548,7 +777,7 @@ def game():
 
         # Add horses
         add_horse_counter += difficulty
-        if add_horse_counter >= 3500 and time > 1000:
+        if add_horse_counter >= 3500 and time > 2000:
             side = random.choice(['left', 'right'])
             spawn_position = random.randint(100, SCREEN_HEIGHT - 100)
             horse = Horse(spawn_position, side, 6, 5)
@@ -592,7 +821,7 @@ def game():
                     player_death_sound.play()
                     pg.mixer.music.fadeout(2000)   # Music fadeout
                     player.kill()
-                    update_ranking(scoreboard.score)
+                    update_ranking(level, scoreboard.score)
                     game_end = True
                     alpha = -700
             
@@ -635,7 +864,7 @@ def game():
                     player_death_sound.play()
                     pg.mixer.music.fadeout(2000)
                     player.kill()
-                    update_ranking(scoreboard.score)
+                    update_ranking(level, scoreboard.score)
                     game_end = True
                     alpha = -700
 
@@ -678,7 +907,7 @@ def game():
                     player_death_sound.play()
                     pg.mixer.music.fadeout(2000)
                     player.kill()
-                    update_ranking(scoreboard.score)
+                    update_ranking(level, scoreboard.score)
                     game_end = True
                     alpha = -700
 
@@ -717,12 +946,13 @@ def game():
                     player_death_sound.play()
                     pg.mixer.music.fadeout(2000)   # Music fadeout
                     player.kill()
-                    update_ranking(scoreboard.score)
+                    update_ranking(level, scoreboard.score)
                     game_end = True
                     alpha = -700
 
 
-        scoreboard.update(points)
+        if not game_end:
+            scoreboard.update(points)
         CURSOR.update()
         pg.display.update()
 
@@ -730,7 +960,7 @@ def game():
 
 # ============================  PAUSE  ============================
 
-def pause(score=None):
+def pause(level, score=None):
     """Pause the game and display a pause screen."""
 
     global running_game, running_pause, restart, CURSOR
@@ -771,7 +1001,7 @@ def pause(score=None):
         click = False
         for event in pg.event.get():
             if event.type == QUIT:
-                update_ranking(score)
+                update_ranking(level, score)
                 pg.quit()
                 sys.exit()
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
@@ -788,13 +1018,13 @@ def pause(score=None):
         if restart_button.collidepoint(mx, my):
             draw_text('Restart', (SCREEN_WIDTH/2, 400), HIGHLIGHTED_FONT, (255, 255, 255), True)
             if click:
-                update_ranking(score)
+                update_ranking(level, score)
                 transition_to = True
                 alpha = 0
         if menu_button.collidepoint(mx, my):
             draw_text('Return to menu', (SCREEN_WIDTH/2, 500), HIGHLIGHTED_FONT, (255, 255, 255), True)
             if click:
-                update_ranking(score)
+                update_ranking(level, score)
                 pg.mixer.music.fadeout(1000)
                 transition_to = True
                 alpha = 0

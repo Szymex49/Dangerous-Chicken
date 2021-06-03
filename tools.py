@@ -46,11 +46,14 @@ def play_music(filename:str, volume=MUSIC_VOLUME):
     pg.mixer.music.play(-1)
 
 
-def draw_text(text:str, position:tuple, font:object, rgb_color:tuple, background=False):
+def draw_text(text:str, position:tuple, font:object, rgb_color:tuple, background=False, point='center'):
     """Draw the text on the screen and return the rectangle in the position of the text."""
     text_obj = font.render(text, 1, rgb_color)
     text_rect = text_obj.get_rect()
-    text_rect.center = position
+    if point == 'center':
+        text_rect.center = position
+    elif point == 'topleft':
+        text_rect.topleft = position
 
     # Draw background behind the text
     if background:
@@ -92,28 +95,33 @@ def draw_lifes(lifes):
         SCREEN.blit(full_heart, heart_rect3)
     
 
-def update_ranking(score):
-    """Add new score to the ranking and remove the the score on the last position."""
+def update_ranking(level:int, score:int):
+    """Add new score to the ranking and remove the the score on the last position.
+    Levels:  0 - easy,  1 - normal,  2 - hard,  3 - hardcore."""
     global RANKING
     date = str(datetime.date.today())
     date = date.replace('-', '.')
 
     # Insert the score to the ranking
     pos = 0
-    for item in RANKING[0]:
+    for item in RANKING[level][0]:
         if score <= item:
-            RANKING[0].insert(pos, score)
-            RANKING[1].insert(pos, date)
+            RANKING[level][0].insert(pos, score)
+            RANKING[level][1].insert(pos, date)
             break
         pos += 1
-    if score >= RANKING[0][-1]:
-        RANKING[0].append(score)
-        RANKING[1].append(date)
+    try:
+        if score >= RANKING[level][0][-1]:
+            RANKING[level][0].append(score)
+            RANKING[level][1].append(date)
+    except IndexError:
+        RANKING[level][0].append(score)
+        RANKING[level][1].append(date)
 
     # Remove the lowest score
-    while len(RANKING[0]) > 5:
-        RANKING[0].pop(0)
-        RANKING[1].pop(0)
+    while len(RANKING[level][0]) > 5:
+        RANKING[level][0].pop(0)
+        RANKING[level][1].pop(0)
 
     os.remove('files\\ranking')
     ranking_file = open('files\\ranking', 'wb')

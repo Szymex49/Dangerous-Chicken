@@ -1,10 +1,15 @@
 """A module with classes designed for creating objects in game.
 List of classes:
- - main player
+ - player
  - enemy
+ - shooting tower
+ - horse
  - missile
+ - fireball
  - explosion
  - scoreboard
+ - slider
+ - cursor
 """
 
 from tools import *
@@ -127,6 +132,7 @@ class ShootingTower(pg.sprite.Sprite):
 
 class Horse(pg.sprite.Sprite):
     """An enemy who moves randomly on one side of the screen and shoots to the player."""
+
     def __init__(self, position:int, side:str, life:int, points:int):
         pg.sprite.Sprite.__init__(self)
         self.side = side
@@ -257,7 +263,7 @@ class ScoreBoard(pg.sprite.Sprite):
         self.rect.topleft = (50, 10)
 
     def update(self, new_points):
-        """"""
+        """Update and display the current score."""
         self.score += new_points
         self.text = "Score: " + str(self.score)
         self.image = self.font.render(self.text, 1, (0, 0, 0))
@@ -266,6 +272,8 @@ class ScoreBoard(pg.sprite.Sprite):
 
 
 class Slider(pg.sprite.Sprite):
+    """A slider composed of the axis and the marker, containing chosen value."""
+
     def __init__(self, position:tuple, volume:float):
         pg.sprite.Sprite.__init__(self)
         self.volume = volume
