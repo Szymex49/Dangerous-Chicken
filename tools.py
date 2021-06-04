@@ -14,7 +14,7 @@ SCREEN = pg.display.set_mode(flags=FULLSCREEN)
 SCREEN_WIDTH = pg.display.get_window_size()[0]
 SCREEN_HEIGHT = pg.display.get_window_size()[1]
 
-MUSIC_VOLUME = 0.0
+MUSIC_VOLUME = 0.2
 SOUNDS_VOLUME = 0.2
 
 ranking_file = open('files\\ranking', 'rb')
@@ -63,6 +63,14 @@ def draw_text(text:str, position:tuple, font:object, rgb_color:tuple, background
     
     SCREEN.blit(text_obj, text_rect)
     return text_rect
+
+
+def darken_screen(alpha):
+    """Darken the screen with alpha (transparence) value."""
+    darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    darken.set_alpha(alpha)
+    darken.fill((0, 0, 0))
+    SCREEN.blit(darken, (0, 0))
 
 
 def draw_lifes(lifes):

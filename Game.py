@@ -15,7 +15,7 @@ HIGHLIGHTED_FONT = pg.font.SysFont('Calibri', 90)
 ARROW_IMAGE = load_image('arrow.png', (30, 30))
 ARROW_RECT = ARROW_IMAGE.get_rect()
 ARROW_RECT.center = (50, 50)
-ARROW_BIG_IMAGE = load_image('arrow.png', (40, 40))
+ARROW_BIG_IMAGE = load_image('arrow.png', (40, 40), False)
 ARROW_BIG_RECT = ARROW_BIG_IMAGE.get_rect()
 ARROW_BIG_RECT.center = (50, 50)
 
@@ -61,11 +61,7 @@ def menu():
 
         # Transition from menu to other screen
         if transition_to:
-            # Darken the SCREEN
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha += 10
             if alpha >= 255:
                 if go_to == 'game':
@@ -92,10 +88,7 @@ def menu():
         
         # Transition from pause or game over to menu
         if transition_from:
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha -= 10
             if alpha <= 0:
                 transition_from = False
@@ -189,11 +182,7 @@ def rules():
 
         # Transition from rules to menu
         if transition_to:
-            # Darken the screen
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha += 10
             if alpha >= 255:
                 running_rules = False
@@ -204,10 +193,7 @@ def rules():
 
         # Transition from menu to rules
         if transition_from:
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha -= 10
             if alpha <= 0:
                 transition_from = False
@@ -243,9 +229,8 @@ def options():
     running_options = True
     transition_from = True
     transition_to = False
+    slide = False
     alpha = 255
-    music_slide = False
-    sounds_slide = False
     difficulties = ['Easy', 'Normal', 'Hard', 'Hardcore']
     difficulty_number = difficulties.index(DIFFICULTY)
     text_font = pg.font.SysFont('Calibri', 50)
@@ -276,8 +261,8 @@ def options():
 
     while running_options:
         mx, my = pg.mouse.get_pos()  # Mouse position
-        music_shift = 0
-        sounds_shift = 0
+        music_slider_pos = music_slider.slider_rect.center[0]
+        sounds_slider_pos = sounds_slider.slider_rect.center[0]
         SCREEN.fill((0, 0, 0))
         SCREEN.blit(ARROW_IMAGE, ARROW_RECT)
 
@@ -296,26 +281,19 @@ def options():
 
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 click = True
-                if music_slider.slider_rect.collidepoint(event.pos):
-                    music_slide = True
-                    dist_x = music_slider.slider_rect.center[0] - mx
-                elif sounds_slider.slider_rect.collidepoint(event.pos):
-                    sounds_slide = True
-                    dist_x = sounds_slider.slider_rect.center[0] - mx
+                slide = True
 
             elif event.type == MOUSEBUTTONUP and event.button == 1:
-                music_slide = False
-                sounds_slide =False
-
-            elif event.type == MOUSEMOTION:
-                if music_slide:
-                    music_shift = mx + dist_x - music_slider.slider_rect.center[0]
-                elif sounds_slide:
-                    sounds_shift = mx + dist_x - sounds_slider.slider_rect.center[0]
+                slide = False
         
 
         # BUTTONS
-        if triangle_left_rect.collidepoint((mx, my)):
+        if music_slider.rect.collidepoint((mx, my)) and slide:
+            music_slider_pos = mx
+        elif sounds_slider.rect.collidepoint((mx, my)) and slide:
+            sounds_slider_pos = mx
+
+        elif triangle_left_rect.collidepoint((mx, my)):
             SCREEN.blit(triangle_left_big, triangle_left_big_rect)
             if click:
                 difficulty_number -= 1
@@ -323,7 +301,8 @@ def options():
             SCREEN.blit(triangle_right_big, triangle_right_big_rect)
             if click:
                 difficulty_number += 1
-        elif ARROW_RECT.collidepoint(pg.mouse.get_pos()):
+        
+        elif ARROW_RECT.collidepoint((mx, my)):
             SCREEN.blit(ARROW_BIG_IMAGE, ARROW_BIG_RECT)
             if click:
                 transition_to = True
@@ -344,27 +323,20 @@ def options():
         slider_sprite.clear(SCREEN, background)
         slider_sprite.draw(SCREEN)
 
-        music_slider.update(music_shift)
-        sounds_slider.update(sounds_shift)
+        music_slider.update(music_slider_pos)
+        sounds_slider.update(sounds_slider_pos)
 
 
         # Transition from menu to options
         if transition_from:
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha -= 10
             if alpha <= 0:
                 transition_from = False
         
         # Transition from options to menu
         if transition_to:
-            # Darken the screen
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha += 10
             if alpha >= 255:
                 running_options = False
@@ -442,11 +414,7 @@ def ranking():
 
         # Transition from ranking to menu
         if transition_to:
-            # Darken the screen
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha += 10
             if alpha >= 255:
                 running_ranking = False
@@ -457,10 +425,7 @@ def ranking():
 
         # Transition from menu to ranking
         if transition_from:
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha -= 10
             if alpha <= 0:
                 transition_from = False
@@ -524,11 +489,7 @@ def author():
 
         # Transition from rules to menu
         if transition_to:
-            # Darken the screen
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha += 10
             if alpha >= 255:
                 running_author = False
@@ -539,10 +500,7 @@ def author():
 
         # Transition from menu to rules
         if transition_from:
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha -= 10
             if alpha <= 0:
                 transition_from = False
@@ -596,8 +554,9 @@ def game():
     # Sounds
     explosion_sound = load_sound('explosion_sound.mp3', SOUNDS_VOLUME)
     laser_sound = load_sound('laser_sound.mp3', SOUNDS_VOLUME)
-    fireball_sound = load_sound('fireball_sound.mp3', 1.6*SOUNDS_VOLUME)
-    damage_sound = load_sound('damage_sound.mp3', 1.2*SOUNDS_VOLUME)
+    enemy_laser_sound = load_sound('enemy_laser_sound.mp3', SOUNDS_VOLUME*0.8)
+    fireball_sound = load_sound('fireball_sound.mp3', SOUNDS_VOLUME*1.6)
+    damage_sound = load_sound('damage_sound.mp3', SOUNDS_VOLUME*1.2)
     player_death_sound = load_sound('player_death_sound.mp3', SOUNDS_VOLUME*1.5)
 
     # Character
@@ -686,21 +645,14 @@ def game():
 
         # If the player lost
         if game_end:
-            # Darken the screen
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha += 10
             if alpha >= 255:
                 game_over(scoreboard.score)
 
         # Transition from menu to game
         if transition_from:
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha -= 10
             if alpha <= 0:
                 transition_from = False
@@ -719,23 +671,23 @@ def game():
 
                 # WSAD - moving the character
                 if event.key == K_a:
-                    player.x_velocity = -4
+                    player.x_velocity += -4
                 if event.key == K_d:
-                    player.x_velocity = 4
+                    player.x_velocity += 4
                 if event.key == K_w:
-                    player.y_velocity = -4
+                    player.y_velocity += -4
                 if event.key == K_s:
-                    player.y_velocity = 4
+                    player.y_velocity += 4
 
             elif event.type == KEYUP:
                 if event.key == K_a:
-                    player.x_velocity = 0
+                    player.x_velocity += 4
                 if event.key == K_d:
-                    player.x_velocity = 0
+                    player.x_velocity += -4
                 if event.key == K_w:
-                    player.y_velocity = 0
+                    player.y_velocity += 4
                 if event.key == K_s:
-                    player.y_velocity = 0
+                    player.y_velocity += -4
             
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 player_shooting = True
@@ -792,7 +744,7 @@ def game():
         player.update()
 
         # If player is shooting
-        if player_shooting:
+        if player_shooting and not game_end:
             player_shooting_counter += 1
             if player_shooting_counter >= 10:
                 aim = pg.mouse.get_pos()
@@ -845,7 +797,7 @@ def game():
             tower_shooting_counter += 1
             if tower_shooting_counter >= 61:
                 enemy_missile_sprite.add(Missile(tower.rect.center, player.rect.center, 6, 'red'))
-                laser_sound.play()
+                enemy_laser_sound.play()
                 tower_shooting_counter = 0
 
             # Check if  the player collided with the tower
@@ -886,7 +838,7 @@ def game():
             horse.update()
 
             horse_shooting_counter += 1
-            if horse_shooting_counter >= 200:
+            if horse_shooting_counter >= 170:
                 enemy_missile_sprite.add(FireBall(horse.rect.center, horse.side))
                 fireball_sound.play()
                 horse_shooting_counter = 0
@@ -982,11 +934,7 @@ def pause(level, score=None):
 
         # Transition to other screen
         if transition_to:
-            # Darken the screen
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha += 10
             if alpha >= 255:
                 running_pause = False
@@ -1063,11 +1011,7 @@ def game_over(score):
 
         # Transition to other screen
         if transition_to:
-            # Darken the screen
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha += 10
             if alpha >= 255:
                 running_game_over = False
@@ -1081,10 +1025,7 @@ def game_over(score):
         
         # Transition from game to game over
         if transition_from:
-            darken = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-            darken.set_alpha(alpha)
-            darken.fill((0, 0, 0))
-            SCREEN.blit(darken, (0, 0))
+            darken_screen(alpha)
             alpha -= 10
             if alpha <= 0:
                 transition_from = False

@@ -22,8 +22,8 @@ class Player(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
         self.image_right = load_image('player.png', (100, 100))
         self.image_left = pg.transform.flip(self.image_right, True, False)
-        self.image_left_bright = load_image('brighten_player.png', (100, 100))
-        self.image_right_bright = pg.transform.flip(self.image_left_bright, True, False)
+        self.image_right_bright = load_image('brighten_player.png', (100, 100))
+        self.image_left_bright = pg.transform.flip(self.image_right_bright, True, False)
         self.image = self.image_right
         self.rect = self.image.get_rect()
         self.rect.center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
@@ -211,11 +211,11 @@ class FireBall(pg.sprite.Sprite):
         self.side = side
         if side == 'left':
             self.images = [load_image('fireball\\' + image, (150, 150)) for image in os.listdir('files\\fireball')]
-            self.velocity = 3
+            self.velocity = 4
         elif side == 'right':
             self.images = [pg.transform.flip(load_image('fireball\\' + image, (150, 150)), True, False)
                             for image in os.listdir('files\\fireball')]
-            self.velocity = -3
+            self.velocity = -4
         self.image_number = 0
         self.image = self.images[0]
         self.rect = self.image.get_rect()
@@ -292,9 +292,9 @@ class Slider(pg.sprite.Sprite):
 
         SCREEN.blit(self.slider_im, self.slider_rect)
 
-    def update(self, shift):
+    def update(self, x_position):
         """Update the position of the slider and draw it on the screen. Calculate the volume."""
-        self.slider_rect.move_ip((shift, 0))
+        self.slider_rect.center = (x_position, self.slider_rect.center[1])
         # If goes out of range
         if self.slider_rect.right >= self.rect.right - self.delta:
             self.slider_rect.right = self.rect.right - self.delta
@@ -309,7 +309,7 @@ class Cursor(pg.sprite.Sprite):
 
     def __init__(self):
         self.arrow = load_image('cursor.png', (20, 20))
-        self.crosshair = load_image('crosshair.png', (20, 20))
+        self.crosshair = load_image('crosshair.png', (25, 25))
         self.image = self.arrow
         self.rect = self.image.get_rect()
         self.rect.topleft = pg.mouse.get_pos()
