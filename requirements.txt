@@ -1,7 +1,3 @@
-#W tym pliku powinny się znaleźć potrzebne biblioteki orz określone ich wersje np.:
+#W tym pliku powinny się znaleźć potrzebne biblioteki oraz określone ich wersje np.:
 pygame==2
-package-two==
-package-three==1.0.1
-packge-four
-
-
+packge-four==1.0.1

@@ -2,10 +2,10 @@
 ## Author: Szymon Malec
 
 ### Short description
-
+Very cool game
 
 ### Technologies
-**name** - description
+**Python** - description
 
 ### How to run this app?
 1. Clone the template project, replacing my-project with the name of the project you are creating: 

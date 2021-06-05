@@ -1,4 +1,3 @@
-from pygame.image import load
 from classes import *
 
 
