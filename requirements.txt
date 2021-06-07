@@ -1,3 +1,1 @@
-#W tym pliku powinny się znaleźć potrzebne biblioteki oraz określone ich wersje np.:
 pygame==2
-packge-four==1.0.1

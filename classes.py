@@ -187,10 +187,6 @@ class Missile(pg.sprite.Sprite):
             filename = 'blue_laser.png'
         elif kind == 'red':
             filename = 'red_laser.png'
-        elif kind == 'orange':
-            filename = 'orange_laser.png'
-        elif kind == 'harnold':
-            filename = 'harnold.jpg'
         
         self.image = pg.transform.rotate(load_image(filename, (35, 12)), angle)
         self.rect = self.image.get_rect()
@@ -222,6 +218,7 @@ class FireBall(pg.sprite.Sprite):
         self.rect.center = start_position
     
     def update(self):
+        """Update the position of the fireball and display the next frame."""
         self.image_number += 1
         if self.image_number >= len(self.images):
             self.image_number = 0

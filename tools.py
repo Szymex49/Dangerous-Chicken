@@ -11,11 +11,10 @@ import random
 import datetime
 
 SCREEN = pg.display.set_mode(flags=FULLSCREEN)
-SCREEN_WIDTH = pg.display.get_window_size()[0]
-SCREEN_HEIGHT = pg.display.get_window_size()[1]
+SCREEN_WIDTH, SCREEN_HEIGHT = pg.display.get_window_size()
 
-MUSIC_VOLUME = 0.2
-SOUNDS_VOLUME = 0.2
+MUSIC_VOLUME = 0.5
+SOUNDS_VOLUME = 0.5
 
 ranking_file = open('files\\ranking', 'rb')
 RANKING = pickle.load(ranking_file)
@@ -23,6 +22,7 @@ ranking_file.close()
 
 
 def load_image(filename:str, size:tuple, erase_bg=True):
+    """Load, convert and resize an image from a file. Optionally erase the background."""
     image = pg.image.load('files\\' + filename).convert()
 
     if erase_bg is True:   # Make the background of the image transparrent
@@ -34,6 +34,7 @@ def load_image(filename:str, size:tuple, erase_bg=True):
 
 
 def load_sound(filename:str, volume=SOUNDS_VOLUME):
+    """Load a sound from a file and set its volume."""
     sound = pg.mixer.Sound('files\\' + filename)
     sound.set_volume(volume)
     return sound
