@@ -8,8 +8,8 @@ pg.mouse.set_visible(False)
 CLOCK = pg.time.Clock()
 CURSOR = Cursor()
 DIFFICULTY = 'Normal'
-MENU_FONT = pg.font.SysFont('Calibri', 80)
-HIGHLIGHTED_FONT = pg.font.SysFont('Calibri', 90)
+MENU_FONT = pg.font.Font('files\Maiandra.ttf', 80)
+HIGHLIGHTED_FONT = pg.font.Font('files\Maiandra.ttf', 90)
 
 ARROW_IMAGE = load_image('arrow.png', (30, 30))
 ARROW_RECT = ARROW_IMAGE.get_rect()
@@ -384,32 +384,32 @@ def ranking():
 
         # Draw the best scores and their dates
         draw_text('Easy', (SCREEN_WIDTH/4, 180), heading_font, (255, 255, 255))
-        position = 450
-        for score, date in zip(RANKING[0][0], RANKING[1][1]):
+        position = 250
+        for score, date in zip(reversed(RANKING[0][0]), reversed(RANKING[1][1])):
             draw_text(str(score), (SCREEN_WIDTH/4 - 100, position), text_font, (255, 255, 255))
             draw_text(str(date), (SCREEN_WIDTH/4 + 50, position), text_font, (255, 255, 255))
-            position -= 50
+            position += 50
         
         draw_text('Normal', (SCREEN_WIDTH/4, 530), heading_font, (255, 255, 255))
-        position = 800
-        for score, date in zip(RANKING[1][0], RANKING[1][1]):
+        position = 600
+        for score, date in zip(reversed(RANKING[1][0]), reversed(RANKING[1][1])):
             draw_text(str(score), (SCREEN_WIDTH/4 - 100, position), text_font, (255, 255, 255))
             draw_text(str(date), (SCREEN_WIDTH/4 + 50, position), text_font, (255, 255, 255))
-            position -= 50
+            position += 50
 
         draw_text('Hard', (3*SCREEN_WIDTH/4, 180), heading_font, (255, 255, 255))
-        position = 450
-        for score, date in zip(RANKING[2][0], RANKING[1][1]):
+        position = 250
+        for score, date in zip(reversed(RANKING[2][0]), reversed(RANKING[1][1])):
             draw_text(str(score), (3*SCREEN_WIDTH/4 - 100, position), text_font, (255, 255, 255))
             draw_text(str(date), (3*SCREEN_WIDTH/4 + 50, position), text_font, (255, 255, 255))
-            position -= 50
+            position += 50
 
         draw_text('Hardcore', (3*SCREEN_WIDTH/4, 530), heading_font, (255, 255, 255))
-        position = 800
-        for score, date in zip(RANKING[3][0], RANKING[1][1]):
+        position = 600
+        for score, date in zip(reversed(RANKING[3][0]), reversed(RANKING[1][1])):
             draw_text(str(score), (3*SCREEN_WIDTH/4 - 100, position), text_font, (255, 255, 255))
             draw_text(str(date), (3*SCREEN_WIDTH/4 + 50, position), text_font, (255, 255, 255))
-            position -= 50
+            position += 50
 
         # Transition from ranking to menu
         if transition_to:
@@ -466,11 +466,11 @@ def author():
     author_rect.center = (320, 500)
 
     text = ["Hi, my name is Szymon and I'm a student of",
-            "the Wrocław Uniwersity of Science and Technology",
+            "Wrocław University of Science and Technology",
             "in the field of applied mathematics. I made",
-            "this game for a programming assignment. I was",
-            "always interested in video games so working on",
-            "this game was fun and great experience.",
+            "this game for a programming assignment. I have",
+            "always been interested in video games, so working on",
+            "this game was a great experience and it brought me a lot of fun.",
             "I hope you'll enjoy it."]
     text_font = pg.font.SysFont('Calibri', 40)
 
