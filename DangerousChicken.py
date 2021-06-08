@@ -566,11 +566,11 @@ def game():
     player_shooting_counter = 10
 
     # Enemies
-    enemy_sprite = pg.sprite.Group()
-    add_enemy_counter = 0
-    tower_sprite = pg.sprite.Group()
-    add_tower_counter = 0
-    tower_shooting_counter = 0
+    rooster_sprite = pg.sprite.Group()
+    add_rooster_counter = 0
+    cow_sprite = pg.sprite.Group()
+    add_cow_counter = 0
+    cow_shooting_counter = 0
     horse_sprite = pg.sprite.Group()
     add_horse_counter = 0
     horse_shooting_counter = 0
@@ -609,9 +609,9 @@ def game():
 
         # Clear the SCREEN
         horse_sprite.clear(SCREEN, background)
-        tower_sprite.clear(SCREEN, background)
+        cow_sprite.clear(SCREEN, background)
         player_sprite.clear(SCREEN, background)
-        enemy_sprite.clear(SCREEN, background)
+        rooster_sprite.clear(SCREEN, background)
         explosion_sprite.clear(SCREEN, background)
         missile_sprite.clear(SCREEN, background)
         enemy_missile_sprite.clear(SCREEN, background)
@@ -619,9 +619,9 @@ def game():
 
         # Draw the objects
         horse_sprite.draw(SCREEN)
-        tower_sprite.draw(SCREEN)
+        cow_sprite.draw(SCREEN)
         player_sprite.draw(SCREEN)
-        enemy_sprite.draw(SCREEN)
+        rooster_sprite.draw(SCREEN)
         explosion_sprite.draw(SCREEN)
         missile_sprite.draw(SCREEN)
         enemy_missile_sprite.draw(SCREEN)
@@ -695,8 +695,8 @@ def game():
                 player_shooting = False
 
         # Add enemies
-        add_enemy_counter += difficulty
-        if add_enemy_counter >= 500:
+        add_rooster_counter += difficulty
+        if add_rooster_counter >= 500:
             spawn_points = [(SCREEN_WIDTH/2, -100),
                             (SCREEN_WIDTH/2, SCREEN_HEIGHT+100),
                             (-100, SCREEN_HEIGHT/2),
@@ -706,12 +706,12 @@ def game():
                             (SCREEN_WIDTH, -100),
                             (-100, -100)]
             spawn_point = random.choice(spawn_points)
-            enemy_sprite.add(Enemy(spawn_point, 3, 3, 1))
-            add_enemy_counter = 0
+            rooster_sprite.add(Rooster(spawn_point, 3, 3, 1))
+            add_rooster_counter = 0
         
-        # Add towers
-        add_tower_counter += difficulty
-        if add_tower_counter >= 2000:
+        # Add cows
+        add_cow_counter += difficulty
+        if add_cow_counter >= 2000:
             spawn_point = [0, 0]
             if player.rect.center[0] >= SCREEN_WIDTH/2:
                 spawn_point[0] = random.randint(70, SCREEN_WIDTH/2 - 70)
@@ -723,8 +723,8 @@ def game():
                 spawn_point[1] = random.randint(SCREEN_HEIGHT/2 + 70, SCREEN_HEIGHT - 70)
             spawn_point = tuple(spawn_point)
             explosion_sprite.add(Explosion(spawn_point, 'blue_explosion', (200, 200)))
-            tower_sprite.add(ShootingTower(spawn_point, 6, 3))
-            add_tower_counter = 0
+            cow_sprite.add(Cow(spawn_point, 6, 3))
+            add_cow_counter = 0
 
         # Add horses
         add_horse_counter += difficulty
@@ -753,16 +753,16 @@ def game():
 
 
         # ENEMIES
-        for enemy in enemy_sprite:
-            enemy.update((player.rect.center[0], player.rect.center[1]))
+        for rooster in rooster_sprite:
+            rooster.update((player.rect.center[0], player.rect.center[1]))
 
-            # If the enemy caught up with the player
-            if player.rect.collidepoint(enemy.rect.center) and not game_end:
+            # If the rooster caught up with the player
+            if player.rect.collidepoint(rooster.rect.center) and not game_end:
                 
-                explosion_sprite.add(Explosion(enemy.rect.center, 'explosion', (150, 150)))
+                explosion_sprite.add(Explosion(rooster.rect.center, 'explosion', (150, 150)))
                 explosion_sound.play()
                 damage_sound.play()
-                enemy.kill()
+                rooster.kill()
                 player.brighten()
                 player.life -= 1
 
@@ -776,36 +776,36 @@ def game():
                     game_end = True
                     alpha = -700
             
-            # Check if the missile hit the enemy
+            # Check if the missile hit the rooster
             for missile in missile_sprite:
-                if enemy.rect.collidepoint(missile.rect.center):
-                    enemy.life -= 1
+                if rooster.rect.collidepoint(missile.rect.center):
+                    rooster.life -= 1
                     missile.kill()
-                    enemy.brighten(player.rect.center)
+                    rooster.brighten(player.rect.center)
 
-                    if enemy.life <= 0:   # If the enemy dies
-                        explosion_sprite.add(Explosion(enemy.rect.center, 'explosion', (150, 150)))
+                    if rooster.life <= 0:   # If the rooster dies
+                        explosion_sprite.add(Explosion(rooster.rect.center, 'explosion', (150, 150)))
                         explosion_sound.play()
-                        points += enemy.points
-                        enemy.kill()
+                        points += rooster.points
+                        rooster.kill()
 
-        # TOWERS
-        for tower in tower_sprite:
-            tower.update(player.rect.center)
+        # COWS
+        for cow in cow_sprite:
+            cow.update(player.rect.center)
 
-            tower_shooting_counter += 1
-            if tower_shooting_counter >= 61:
-                enemy_missile_sprite.add(Missile(tower.rect.center, player.rect.center, 6, 'red'))
+            cow_shooting_counter += 1
+            if cow_shooting_counter >= 61:
+                enemy_missile_sprite.add(Missile(cow.rect.center, player.rect.center, 6, 'red'))
                 enemy_laser_sound.play()
-                tower_shooting_counter = 0
+                cow_shooting_counter = 0
 
-            # Check if  the player collided with the tower
-            if player.rect.collidepoint(tower.rect.center) and not game_end:
+            # Check if  the player collided with the cow
+            if player.rect.collidepoint(cow.rect.center) and not game_end:
 
-                explosion_sprite.add(Explosion(tower.rect.center, 'explosion', (200, 200)))
+                explosion_sprite.add(Explosion(cow.rect.center, 'explosion', (200, 200)))
                 explosion_sound.play()
                 damage_sound.play()
-                tower.kill()
+                cow.kill()
                 player.brighten()
                 player.life -= 1
 
@@ -819,17 +819,17 @@ def game():
                     game_end = True
                     alpha = -700
 
-            # Check if the missile hit the tower
+            # Check if the missile hit the cow
             for missile in missile_sprite:
-                if tower.rect.collidepoint(missile.rect.center):
-                    tower.life -= 1
+                if cow.rect.collidepoint(missile.rect.center):
+                    cow.life -= 1
                     missile.kill()
-                    tower.brighten(player.rect.center)
-                    if tower.life <= 0:   # If the tower dies
-                        explosion_sprite.add(Explosion(tower.rect.center, 'explosion', (200, 200)))
+                    cow.brighten(player.rect.center)
+                    if cow.life <= 0:   # If the cow dies
+                        explosion_sprite.add(Explosion(cow.rect.center, 'explosion', (200, 200)))
                         explosion_sound.play()
-                        tower.kill()
-                        points += tower.points
+                        cow.kill()
+                        points += cow.points
         
 
         # HORSES

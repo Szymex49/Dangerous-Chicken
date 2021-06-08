@@ -5,10 +5,10 @@
 A simple arcade game where you play as a chicken with special abbilities. You need to defend yourself against the bad gang of animals.
 
 ### Technologies
-**Python** - programming language in which the whole game is written <br>
-**Pygame** - a set of Python modules designed for creating video games <br>
-**Gimp** - for editing images <br>
-**Canva** - for creating simple graphics
+**Python** - programming language in which the whole game is written. <br>
+**Pygame** - a set of Python modules designed for creating video games. <br>
+**Gimp** - for editing images. <br>
+**Canva** - for creating simple graphics.
 
 ### How to run this app?
 1. Clone the project: <br>

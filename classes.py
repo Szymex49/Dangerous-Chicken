@@ -1,8 +1,8 @@
 """A module with classes designed for creating objects in game.
 List of classes:
  - player
- - enemy
- - shooting tower
+ - rooster
+ - cow
  - horse
  - missile
  - fireball
@@ -56,7 +56,7 @@ class Player(pg.sprite.Sprite):
             self.image = self.image_left_bright
 
 
-class Enemy(pg.sprite.Sprite):
+class Rooster(pg.sprite.Sprite):
     """An enemy who moves towards the player."""
 
     def __init__(self, starting_position:tuple, velocity:int, life:int, points:int):
@@ -75,7 +75,7 @@ class Enemy(pg.sprite.Sprite):
         self.points = points
     
     def update(self, player_coords:tuple):
-        """Update the position of the enemy"""
+        """Update the position of the rooster"""
         x_dist = player_coords[0] - self.rect.center[0]
         y_dist = player_coords[1] - self.rect.center[1]
         dist = math.sqrt(x_dist**2 + y_dist**2)
@@ -85,7 +85,7 @@ class Enemy(pg.sprite.Sprite):
         except ZeroDivisionError:
             pass
         self.rect.move_ip((self.x_velocity, self.y_velocity))
-        # Turn the enemy towards the player
+        # Turn the rooster towards the player
         if self.rect.center[0] < player_coords[0]:
             self.image = self.image_right
         else:
@@ -100,7 +100,7 @@ class Enemy(pg.sprite.Sprite):
 
 
 
-class ShootingTower(pg.sprite.Sprite):
+class Cow(pg.sprite.Sprite):
     """An enemy who doesn't move but shoots to the player."""
 
     def __init__(self, position:tuple, life:int, points:int):

@@ -16,9 +16,15 @@ SCREEN_WIDTH, SCREEN_HEIGHT = pg.display.get_window_size()
 MUSIC_VOLUME = 0.5
 SOUNDS_VOLUME = 0.5
 
-ranking_file = open('files\\ranking', 'rb')
-RANKING = pickle.load(ranking_file)
-ranking_file.close()
+if not 'ranking' in os.listdir('files'):
+    RANKING = [[[], []], [[], []], [[], []], [[], []]]
+    ranking_file = open('files\\ranking', 'wb')
+    pickle.dump(RANKING, ranking_file)
+    ranking_file.close()
+else:
+    ranking_file = open('files\\ranking', 'rb')
+    RANKING = pickle.load(ranking_file)
+    ranking_file.close()
 
 
 def load_image(filename:str, size:tuple, erase_bg=True):
