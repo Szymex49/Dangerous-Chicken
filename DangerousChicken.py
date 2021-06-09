@@ -470,8 +470,8 @@ def author():
             "in the field of applied mathematics. I made",
             "this game for a programming assignment. I have",
             "always been interested in video games, so working on",
-            "this game was a great experience and it brought me a lot of fun.",
-            "I hope you'll enjoy it."]
+            "this game was a great experience and it brought me",
+            "a lot of fun. I hope you'll enjoy it."]
     text_font = pg.font.SysFont('Calibri', 40)
 
     while running_author:
