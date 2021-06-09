@@ -6,8 +6,8 @@ A simple arcade game where you play as a chicken with special abilities. You nee
 
 The game offers four difficulty levels. You get points for defeating enemies. What score will you achieve? Are you brave enough to try hardcore mode?
 
-![Screenshot](files\screenshot1.png)
-![Screenshot](files\screenshot2.png)
+![Screenshot](/files/screenshot1.png)
+![Screenshot](/files/screenshot2.png)
 
 ### Technologies
 **Python** - a programming language in which the whole game is written. <br>
