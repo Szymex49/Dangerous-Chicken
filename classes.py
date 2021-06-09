@@ -254,7 +254,7 @@ class ScoreBoard(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
         self.score = 0
         self.text = "Score: " + str(self.score)
-        self.font = pg.font.SysFont('Calibri', 40)
+        self.font = pg.font.Font('files\Calibri.ttf', 40)
         self.image = self.font.render(self.text, 1, (0, 0, 0))
         self.rect = self.image.get_rect()
         self.rect.topleft = (50, 10)

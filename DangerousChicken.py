@@ -153,7 +153,7 @@ def rules():
                 "2. You can shoot laser.",
                 "3. Other animals don't like you and want to kill you.",
                 "4. Kill them."]
-    rules_font = pg.font.SysFont('Calibri', 40)
+    rules_font = pg.font.Font('files\Calibri.ttf', 40)
 
     wsad_image = load_image('controls1.jpg', (250, 250))
     wsad_rect = wsad_image.get_rect()
@@ -232,7 +232,7 @@ def options():
     alpha = 255
     difficulties = ['Easy', 'Normal', 'Hard', 'Hardcore']
     difficulty_number = difficulties.index(DIFFICULTY)
-    text_font = pg.font.SysFont('Calibri', 50)
+    text_font = pg.font.Font('files\Calibri.ttf', 50)
 
     background = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
     background.fill((0, 0, 0))
@@ -373,8 +373,8 @@ def ranking():
     RANKING = pickle.load(ranking_file)
     ranking_file.close()
 
-    heading_font = pg.font.SysFont('Calibri', 55)
-    text_font = pg.font.SysFont('Calibri', 35)
+    heading_font = pg.font.Font('files\Calibri.ttf', 55)
+    text_font = pg.font.Font('files\Calibri.ttf', 35)
 
     while running_ranking:
 
@@ -472,7 +472,7 @@ def author():
             "always been interested in video games, so working on",
             "this game was a great experience and it brought me",
             "a lot of fun. I hope you'll enjoy it."]
-    text_font = pg.font.SysFont('Calibri', 40)
+    text_font = pg.font.Font('files\Calibri.ttf', 40)
 
     while running_author:
         SCREEN.fill((0, 0, 0))
@@ -483,7 +483,7 @@ def author():
 
         position = 330
         for line in text:
-            draw_text(line, (SCREEN_WIDTH/2 - 120, position), text_font, (255, 255, 255), point='topleft')
+            draw_text(line, (SCREEN_WIDTH/2 - 130, position), text_font, (255, 255, 255), point='topleft')
             position += 50
 
         # Transition from rules to menu
