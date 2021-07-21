@@ -15,6 +15,9 @@ The game offers four difficulty levels. You get points for defeating enemies. Wh
 **Gimp** - for editing images. <br>
 **Canva** - for creating simple graphics.
 
+### License
+The whole project was created solely for educational purposes.
+
 ### How to run this app?
 1. Clone the project: <br>
 `git clone  https://github.com/Szymex49/Dangerous-Chicken.git DangerousChicken` <br>
