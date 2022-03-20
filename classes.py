@@ -247,20 +247,6 @@ class Explosion(pg.sprite.Sprite):
         self.image = self.images[self.image_number]
 
 
-class Item(pg.sprite.Sprite):
-    """"""
-
-    def __init__(self, kind:str, position:tuple):
-        pg.sprite.Sprite.__init__(self)
-        self.kind = kind
-        if kind == 'harnold':
-            self.image = load_image('harnold.jpg', (25, 70))
-        elif kind == 'heart':
-            self.image = load_image('heart.png', (70, 70))
-        self.rect = self.image.get_rect()
-        self.rect.center = position
-
-
 class ScoreBoard(pg.sprite.Sprite):
     """A scoreboard which displays the number of player's points."""
 

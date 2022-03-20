@@ -3,7 +3,7 @@ from classes import *
 
 # Main options
 pg.init()
-pg.mixer.set_num_channels(40)
+pg.mixer.set_num_channels(30)
 pg.mouse.set_visible(False)
 CLOCK = pg.time.Clock()
 CURSOR = Cursor()
@@ -557,7 +557,6 @@ def game():
     fireball_sound = load_sound('fireball_sound.mp3', SOUNDS_VOLUME*1.6)
     damage_sound = load_sound('damage_sound.mp3', SOUNDS_VOLUME*1.2)
     player_death_sound = load_sound('player_death_sound.mp3', SOUNDS_VOLUME*1.5)
-    harnold_sound = load_sound('harnold_sound.mp3', SOUNDS_VOLUME*3)
 
     # Character
     player_sprite = pg.sprite.Group()
@@ -582,11 +581,6 @@ def game():
 
     # Explosions
     explosion_sprite = pg.sprite.Group()
-
-    # Items
-    item_sprite = pg.sprite.Group()
-    harnold_boost = False
-    harnold_boost_counter = 0
 
     # Scoreboard
     scoreboard_sprite = pg.sprite.Group()
@@ -618,7 +612,6 @@ def game():
         cow_sprite.clear(SCREEN, background)
         player_sprite.clear(SCREEN, background)
         rooster_sprite.clear(SCREEN, background)
-        item_sprite.clear(SCREEN, background)
         explosion_sprite.clear(SCREEN, background)
         missile_sprite.clear(SCREEN, background)
         enemy_missile_sprite.clear(SCREEN, background)
@@ -629,7 +622,6 @@ def game():
         cow_sprite.draw(SCREEN)
         player_sprite.draw(SCREEN)
         rooster_sprite.draw(SCREEN)
-        item_sprite.draw(SCREEN)
         explosion_sprite.draw(SCREEN)
         missile_sprite.draw(SCREEN)
         enemy_missile_sprite.draw(SCREEN)
@@ -701,7 +693,6 @@ def game():
                 player_shooting_counter = 10
             elif event.type == MOUSEBUTTONUP and event.button == 1:
                 player_shooting = False
-    
 
         # Add enemies
         add_rooster_counter += difficulty
@@ -721,7 +712,16 @@ def game():
         # Add cows
         add_cow_counter += difficulty
         if add_cow_counter >= 2000:
-            spawn_point = rand_spawn_point(player)
+            spawn_point = [0, 0]
+            if player.rect.center[0] >= SCREEN_WIDTH/2:
+                spawn_point[0] = random.randint(70, SCREEN_WIDTH/2 - 70)
+            elif player.rect.center[0] < SCREEN_WIDTH/2:
+                spawn_point[0] = random.randint(SCREEN_WIDTH/2 + 70, SCREEN_WIDTH - 70)
+            if player.rect.center[1] >= SCREEN_HEIGHT/2:
+                spawn_point[1] = random.randint(70, SCREEN_HEIGHT/2 - 70)
+            elif player.rect.center[1] < SCREEN_HEIGHT/2:
+                spawn_point[1] = random.randint(SCREEN_HEIGHT/2 + 70, SCREEN_HEIGHT - 70)
+            spawn_point = tuple(spawn_point)
             explosion_sprite.add(Explosion(spawn_point, 'blue_explosion', (200, 200)))
             cow_sprite.add(Cow(spawn_point, 6, 3))
             add_cow_counter = 0
@@ -735,21 +735,9 @@ def game():
             horse_sprite.add(horse)
             explosion_sprite.add(Explosion(horse.rect.center, 'blue_explosion', (200, 200)))
             add_horse_counter = 0
-        
-        # Add hearts
-        if time % 4000 == 0:
-            spawn_point = rand_spawn_point(player)
-            explosion_sprite.add(Explosion(spawn_point, 'red_light', (120, 120)))
-            item_sprite.add(Item('heart', spawn_point))
-        
-        # Add harnolds
-        if time % 4000 == 2000:
-            spawn_point = rand_spawn_point(player)
-            explosion_sprite.add(Explosion(spawn_point, 'blue_light', (100, 170)))
-            item_sprite.add(Item('harnold', spawn_point))
 
 
-        # --- UPPDATING OBJECTS --- 
+        # --- Update all the objects --- 
 
         # PLAYER
         player.update()
@@ -757,10 +745,7 @@ def game():
         # If player is shooting
         if player_shooting and not game_end:
             player_shooting_counter += 1
-            shoot = 10
-            if harnold_boost:
-                shoot = 5
-            if player_shooting_counter >= shoot:
+            if player_shooting_counter >= 10:
                 aim = pg.mouse.get_pos()
                 missile_sprite.add(Missile(player.rect.center, aim, 12, 'blue'))
                 laser_sound.play()
@@ -915,26 +900,6 @@ def game():
                     update_ranking(level, scoreboard.score)
                     game_end = True
                     alpha = -700
-        
-
-        # ITEMS
-        for item in item_sprite:
-            if player.rect.collidepoint(item.rect.center) and not game_end:
-                if item.kind == 'harnold':
-                    harnold_boost = True
-                    harnold_sound.play()
-                if item.kind == 'heart':
-                    if player.life < 3:
-                        player.life += 1
-                item.kill()
-        
-
-        # BOOSTS
-        if harnold_boost:
-            harnold_boost_counter += 1
-            if harnold_boost_counter >= 400:
-                harnold_boost = False
-                harnold_boost_counter = 0
 
 
         if not game_end:

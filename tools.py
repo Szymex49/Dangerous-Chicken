@@ -10,12 +10,11 @@ import math
 import random
 import datetime
 
-
 SCREEN = pg.display.set_mode(flags=FULLSCREEN)
 SCREEN_WIDTH, SCREEN_HEIGHT = pg.display.get_window_size()
 
-MUSIC_VOLUME = 0.0
-SOUNDS_VOLUME = 0.0
+MUSIC_VOLUME = 0.5
+SOUNDS_VOLUME = 0.5
 
 if not 'ranking' in os.listdir('files'):
     RANKING = [[[], []], [[], []], [[], []], [[], []]]
@@ -26,20 +25,6 @@ else:
     ranking_file = open('files\\ranking', 'rb')
     RANKING = pickle.load(ranking_file)
     ranking_file.close()
-
-
-def rand_spawn_point(player:object):
-    """Draw random spawn point depending on the player's position."""
-    spawn_point = [0, 0]
-    if player.rect.center[0] >= SCREEN_WIDTH/2:
-        spawn_point[0] = random.randint(70, SCREEN_WIDTH/2 - 70)
-    elif player.rect.center[0] < SCREEN_WIDTH/2:
-        spawn_point[0] = random.randint(SCREEN_WIDTH/2 + 70, SCREEN_WIDTH - 70)
-    if player.rect.center[1] >= SCREEN_HEIGHT/2:
-        spawn_point[1] = random.randint(70, SCREEN_HEIGHT/2 - 70)
-    elif player.rect.center[1] < SCREEN_HEIGHT/2:
-        spawn_point[1] = random.randint(SCREEN_HEIGHT/2 + 70, SCREEN_HEIGHT - 70)
-    return tuple(spawn_point)
 
 
 def load_image(filename:str, size:tuple, erase_bg=True):
