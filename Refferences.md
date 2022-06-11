@@ -5,7 +5,7 @@
 https://www.flaticon.com/free-icon/chicken_3440440?term=hen&page=1&position=43&page=1&position=43&related_id=3440440&origin=search <br>
 https://skyops.itch.io/ergonomic-cursors <br>
 
-- Grpahics <br>
+- Graphics <br>
 https://www.flaticon.com/free-icon/right-arrow_271226?term=arrow&page=1&position=12&page=1&position=12&related_id=271226&origin=search <br>
 https://www.flaticon.com/free-icon/play-arrow_56809?term=triangle&page=1&position=13&page=1&position=13&related_id=56809&origin=search <br>
 https://www.vectorstock.com/royalty-free-vector/wasd-computer-keyboard-buttons-desktop-interface-vector-30920369 <br>
